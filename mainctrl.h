@@ -102,6 +102,10 @@ public slots:
     ///
     void createDefaultNode();
 
+    QString getScript();
+
+    void createScreenshotScript();
+
 private slots:
 
     ///
@@ -110,8 +114,6 @@ private slots:
     /// \param [in] selection   Handles to all selected nodes.
     ///
     void selectionChanged(QList<zodiac::NodeHandle> selection);
-
-    void getScript();
 
 private: // members
 

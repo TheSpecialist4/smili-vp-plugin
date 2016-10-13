@@ -8,5 +8,8 @@
         <file>questionmark.svg</file>
         <file>outgoing.svg</file>
         <file>zodiac_logo.png</file>
+        <file>gear.png</file>
+        <file>editicon.png</file>
+        <file>menu.png</file>
     </qresource>
 </RCC>

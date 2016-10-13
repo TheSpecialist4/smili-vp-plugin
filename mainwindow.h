@@ -30,8 +30,7 @@
 class MainCtrl;
 class PropertyEditor;
 class QSplitter;
-//class QVBoxLayout;
-//class QTextEdit;
+class QTextEdit;
 
 ///
 /// \brief A single instance of this class contains all other widgets of the application.
@@ -65,7 +64,9 @@ private slots:
     ///
     /// \brief Displays the About-window of the application.
     ///
-    //void displayAbout();
+    void displayAbout();
+
+    void displayScript();
 
 private: // methods
 
@@ -96,9 +97,7 @@ private: // members
     ///
     QSplitter* m_mainSplitter;
 
-    //QVBoxLayout* pluginBox;
-
-    //QTextEdit* scriptArea;
+    QTextEdit* scriptArea;
 
 };
 

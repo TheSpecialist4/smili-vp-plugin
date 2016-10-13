@@ -2,7 +2,6 @@
 
 #include <QDebug>
 #include <cstdlib>
-#include <QMessageBox>
 
 #include "nodectrl.h"
 #include "propertyeditor.h"
@@ -51,17 +50,17 @@ bool MainCtrl::deleteNode(NodeCtrl* node)
     }
 #endif
 
-    if(!node->isRemovable()){
-        // nodes with connections cannot be deleted
-        return false;
-    }
+//    if(!node->isRemovable()){
+//        // nodes with connections cannot be deleted
+//        return false;
+//    }
 
     // disconnect and delete the node
     node->disconnect();
     zodiac::NodeHandle handle = node->getNodeHandle();
     m_nodes.remove(handle);
     bool result = handle.remove();
-    Q_ASSERT(result);
+    //Q_ASSERT(result);
     return result;
 }
 
@@ -126,21 +125,110 @@ void MainCtrl::createDefaultNode()
     newNode->setSelected(true);
 }
 
+QString MainCtrl::getScript()
+{
+    QString script = "Script: ";
+    for (auto key : m_nodes.keys()) {
+        script.append(m_nodes[key]->getName());
+        script.append(" ");
+    }
+    qDebug() << script;
+    return script;
+}
+
+void MainCtrl::createScreenshotScript()
+{
+    for (auto node : m_nodes.keys()) {
+        this->deleteNode(m_nodes[node]);
+    }
+
+    NodeCtrl* var1 = this->createNode("\"RegOut_7.nii.gz\"");
+    var1->getNodeHandle().setPos(-500, -680);
+    var1->addOutgoingPlug("value");
+
+    NodeCtrl* loadFile = this->createNode("LoadFile");
+    loadFile->getNodeHandle().setPos(-500, -480);
+    loadFile->addIncomingPlug("fileName");
+    loadFile->addOutgoingPlug("file");
+
+    NodeCtrl* loadFile2 = this->createNode("LoadFile");
+    loadFile2->getNodeHandle().setPos(-100, -480);
+    loadFile2->addIncomingPlug("fileName");
+    loadFile2->addOutgoingPlug("file");
+
+    NodeCtrl* var2 = this->createNode("\"RegDOut_7.nii.gz\"");
+    var2->getNodeHandle().setPos(-100, -680);
+    var2->addOutgoingPlug("value");
+
+    NodeCtrl* vectorField = this->createNode("VectorField");
+    vectorField->addIncomingPlug("file");
+    vectorField->addIncomingPlug("subSampleFactor");
+    vectorField->addIncomingPlug("scaling");
+    vectorField->getNodeHandle().setPos(-100, -600);
+
+    NodeCtrl* varSubSample = this->createNode("8");
+    varSubSample->getNodeHandle().setPos(-10, -600);
+    varSubSample->addOutgoingPlug("value");
+
+    NodeCtrl* varScale = this->createNode("3.0");
+    varScale->getNodeHandle().setPos(-10, -550);
+    varScale->addOutgoingPlug("value");
+
+    NodeCtrl* camera = this->createNode("CameraView");
+    camera->getNodeHandle().setPos(-400, -200);
+    camera->addIncomingPlug("fileName");
+    camera->addOutgoingPlug("file");
+
+    NodeCtrl* varCam = this->createNode("\"camera.cam\"");
+    varCam->getNodeHandle().setPos(-450, -230);
+    varCam->addOutgoingPlug("value");
+
+    NodeCtrl* importView = this->createNode("ImportView");
+    importView->getNodeHandle().setPos(-500, -400);
+    importView->addIncomingPlug("image");
+    importView->addOutgoingPlug("view");
+
+    NodeCtrl* screenshot = this->createNode("Screenshot");
+    screenshot->getNodeHandle().setPos(-50, 0);
+    screenshot->addIncomingPlug("image1");
+    screenshot->addIncomingPlug("image2");
+    screenshot->addIncomingPlug("camera");
+    screenshot->addOutgoingPlug("outputFile");
+
+    NodeCtrl* out = this->createNode("OpenFile");
+    out->getNodeHandle().setPos(0, 30);
+    out->addIncomingPlug("inputStream");
+    out->addOutgoingPlug("outputFile");
+
+    NodeCtrl* varOut = this->createNode("\"screenie.png\"");
+    varOut->addIncomingPlug("value");
+    varOut->getNodeHandle().setPos(25, 100);
+
+    var1->getNodeHandle().getPlug("value").connectPlug(loadFile->getNodeHandle().getPlug("fileName"));
+
+    var2->getNodeHandle().getPlug("value").connectPlug(loadFile2->getNodeHandle().getPlug("fileName"));
+
+    loadFile->getNodeHandle().getPlug("file").connectPlug(importView->getNodeHandle().getPlug("image"));
+
+    importView->getNodeHandle().getPlug("view").connectPlug(screenshot->getNodeHandle().getPlug("image1"));
+
+    varCam->getNodeHandle().getPlug("value").connectPlug(camera->getNodeHandle().getPlug("fileName"));
+
+    camera->getNodeHandle().getPlug("file").connectPlug(screenshot->getNodeHandle().getPlug("camera"));
+
+    varSubSample->getNodeHandle().getPlug("value").connectPlug(vectorField->getNodeHandle().getPlug("subSampleFactor"));
+
+    varScale->getNodeHandle().getPlug("value").connectPlug(vectorField->getNodeHandle().getPlug("scaling"));
+
+    loadFile2->getNodeHandle().getPlug("file").connectPlug(vectorField->getNodeHandle().getPlug("file"));
+    loadFile2->getNodeHandle().getPlug("file").connectPlug(screenshot->getNodeHandle().getPlug("image2"));
+
+    screenshot->getNodeHandle().getPlug("outputFile").connectPlug(out->getNodeHandle().getPlug("inputStream"));
+
+    out->getNodeHandle().getPlug("outputFile").connectPlug(varOut->getNodeHandle().getPlug("value"));
+}
+
 void MainCtrl::selectionChanged(QList<zodiac::NodeHandle> selection)
 {
     m_propertyEditor->showNodes(selection);
-}
-
-void MainCtrl::getScript()
-{
-    QString script = "";
-    for (auto key : m_nodes.keys())
-    {
-//        auto plugs = m_nodes[key]->getPlugHandles();
-//        for (auto plug : plugs) {
-//            if (plug.is)
-//        }
-        script.append(m_nodes[key]->getName());
-    }
-    qDebug() << script;
 }
