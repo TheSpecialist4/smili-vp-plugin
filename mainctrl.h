@@ -95,6 +95,8 @@ public: // methods
     ///
     bool shutdown();
 
+    QString getScript();
+
 public slots:
 
     ///
@@ -102,9 +104,11 @@ public slots:
     ///
     void createDefaultNode();
 
-    QString getScript();
-
     void createScreenshotScript();
+
+    void saveScript();
+
+    void loadScript();
 
 private slots:
 
@@ -114,6 +118,13 @@ private slots:
     /// \param [in] selection   Handles to all selected nodes.
     ///
     void selectionChanged(QList<zodiac::NodeHandle> selection);
+
+private: // private functions
+
+    void processNodes(QList<zodiac::NodeHandle> allNodes,
+                      QList<zodiac::NodeHandle> ready, QList<zodiac::NodeHandle> processed);
+
+    bool saveNode(zodiac::NodeHandle node);
 
 private: // members
 

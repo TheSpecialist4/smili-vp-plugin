@@ -159,7 +159,8 @@ void MainWindow::displayAbout()
 
 void MainWindow::displayScript()
 {
-    scriptArea->setText(m_mainCtrl->getScript());
+    //scriptArea->setText(m_mainCtrl->getScript());
+    m_mainCtrl->saveScript();
 }
 
 void MainWindow::readSettings()

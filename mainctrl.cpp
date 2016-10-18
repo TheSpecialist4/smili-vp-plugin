@@ -50,17 +50,17 @@ bool MainCtrl::deleteNode(NodeCtrl* node)
     }
 #endif
 
-//    if(!node->isRemovable()){
-//        // nodes with connections cannot be deleted
-//        return false;
-//    }
+    if(!node->isRemovable()){
+        // nodes with connections cannot be deleted
+        return false;
+    }
 
     // disconnect and delete the node
     node->disconnect();
     zodiac::NodeHandle handle = node->getNodeHandle();
     m_nodes.remove(handle);
     bool result = handle.remove();
-    //Q_ASSERT(result);
+    Q_ASSERT(result);
     return result;
 }
 
@@ -132,8 +132,86 @@ QString MainCtrl::getScript()
         script.append(m_nodes[key]->getName());
         script.append(" ");
     }
-    qDebug() << script;
+    //qDebug() << script;
     return script;
+}
+
+void MainCtrl::saveScript()
+{
+    QList<zodiac::NodeHandle> allNodes = m_nodes.keys();
+    QList<zodiac::NodeHandle> ready;
+    QList<zodiac::NodeHandle> processed;
+
+    qDebug() << getScript();
+    //qDebug() << "allNodes Size: " << allNodes.size();
+
+    processNodes(allNodes, ready, processed);
+}
+
+QString printList(QList<zodiac::NodeHandle> nodes) {
+    QString out = "";
+    for (auto node : nodes) {
+        out += node.getName() + " ";
+    }
+    return out;
+}
+
+void MainCtrl::processNodes(QList<zodiac::NodeHandle> allNodes,
+                           QList<zodiac::NodeHandle> ready, QList<zodiac::NodeHandle> processed)
+{
+    if (allNodes.size() == 0 && ready.size() == 0) {
+        Q_ASSERT(this->m_nodes.keys().size() == processed.size()); //always true
+        Q_ASSERT(ready.size() == 0); // always true
+        qDebug() << "Processed size: " << processed.size();
+        qDebug() << "Ready Size: " << ready.size();
+        return;
+    }
+    // first node or individual node not connected
+    if (ready.size() == 0) {
+        ready.append(allNodes[0]);
+        allNodes.removeAt(0);
+    }
+    /*
+     * save (ready[0]);
+     * for (neighbor : ready[0].neighbors) {
+     *   ready.append(neighbor);
+     * }
+     * processed.append(ready[0]);
+     * ready.removeAt(0);
+     */
+    saveNode(ready[0]);
+    for (auto plug : ready[0].getPlugs()) {
+        for (auto connectedPlug : plug.getConnectedPlugs()) {
+            auto nodeHandle = connectedPlug.getNode();
+            if (!(processed.contains(nodeHandle) || ready.contains(nodeHandle))) {
+                ready.append(nodeHandle);
+                qDebug() << "allNodes: " << printList(allNodes);
+                qDebug() << "Added to queue: " << nodeHandle.getName();
+                allNodes.removeOne(nodeHandle);
+                qDebug() << "allNodes: " << printList(allNodes);
+                qDebug() << "ready: " << printList(ready);
+            }
+            qDebug() << "allNodes size: " << allNodes.size();
+        }
+    }
+    processed.append(ready[0]);
+    ready.removeFirst();
+    qDebug() << "Final ready: " << printList(ready);
+    qDebug() << "Final processed: " << printList(processed);
+    qDebug() << "Final allNodes: " << printList(allNodes);
+
+    processNodes(allNodes, ready, processed);
+}
+
+bool MainCtrl::saveNode(zodiac::NodeHandle node)
+{
+    qDebug() << "Saved node: " << node.getName();
+    return true;
+}
+
+void MainCtrl::loadScript()
+{
+
 }
 
 void MainCtrl::createScreenshotScript()
@@ -226,6 +304,8 @@ void MainCtrl::createScreenshotScript()
     screenshot->getNodeHandle().getPlug("outputFile").connectPlug(out->getNodeHandle().getPlug("inputStream"));
 
     out->getNodeHandle().getPlug("outputFile").connectPlug(varOut->getNodeHandle().getPlug("value"));
+
+    saveScript();
 }
 
 void MainCtrl::selectionChanged(QList<zodiac::NodeHandle> selection)
