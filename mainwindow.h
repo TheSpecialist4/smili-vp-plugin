@@ -31,6 +31,9 @@ class MainCtrl;
 class PropertyEditor;
 class QSplitter;
 class QTextEdit;
+class QPushButton;
+class QVBoxLayout;
+class QGridLayout;
 
 ///
 /// \brief A single instance of this class contains all other widgets of the application.
@@ -50,6 +53,10 @@ public: // methods
     ///
     MainWindow(QWidget *parent=0);
 
+//public: //static methods
+
+//    static void hideNewNodePanel();
+
 protected: // methods
 
     ///
@@ -68,6 +75,8 @@ private slots:
 
     void displayScript();
 
+    void toggleNewNodePanelVisibility();
+
 private: // methods
 
     ///
@@ -85,6 +94,12 @@ private: // methods
     ///
     void writeSettings();
 
+    void createNewNodePanel(QGridLayout* );
+
+private slots:
+
+    void createNewNode(QString);
+
 private: // members
 
     ///
@@ -98,6 +113,14 @@ private: // members
     QSplitter* m_mainSplitter;
 
     QTextEdit* scriptArea;
+
+    QPushButton* tempButton;
+
+    QTabWidget* nodePropertyTab;
+
+    bool isNewNodePanelOpen;
+
+    QWidget* newNodeLayoutHolder;
 
 };
 

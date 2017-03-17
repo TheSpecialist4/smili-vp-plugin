@@ -58,7 +58,7 @@ public: // methods
     ///
     /// \return Control for new node.
     ///
-    NodeCtrl* createNode(const QString& name = "");
+    //NodeCtrl* createNode(const QString& name = "", const QString& nodeType = "");
 
     ///
     /// \brief Deletes an existing node from the graph.
@@ -109,6 +109,8 @@ public slots:
     void saveScript();
 
     void loadScript();
+
+    NodeCtrl* createNode(QString& nodeType);
 
 private slots:
 

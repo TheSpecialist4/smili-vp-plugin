@@ -1,4 +1,5 @@
 #include "mainctrl.h"
+#include "mainwindow.h"
 
 #include <QDebug>
 #include <cstdlib>
@@ -22,21 +23,55 @@ MainCtrl::MainCtrl(QObject *parent, zodiac::Scene* scene, PropertyEditor* proper
             this, SLOT(selectionChanged(QList<zodiac::NodeHandle>)));
 }
 
-NodeCtrl* MainCtrl::createNode(const QString& name)
+NodeCtrl* MainCtrl::createNode(QString &nodeType)
 {
     // the newly created Node is the only selected one to avoid confusion
+//    m_scene.deselectAll();
+
+//    // use the given name or construct a default one
+//    QString nodeName = name;
+//    if(nodeName.isEmpty()){
+//        nodeName = s_defaultName + QString::number(m_nodeIndex++);
+//    }
+
+//    // create the node
+//    NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
+//    m_nodes.insert(nodeCtrl->getNodeHandle(), nodeCtrl);
+
+//    return nodeCtrl;
+
     m_scene.deselectAll();
 
-    // use the given name or construct a default one
-    QString nodeName = name;
-    if(nodeName.isEmpty()){
-        nodeName = s_defaultName + QString::number(m_nodeIndex++);
-    }
-
-    // create the node
+    QString nodeName = nodeType;
+//    if (nodeType == "Variable") {
+//        //create variable node
+//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
+//        MainWindow::hideNewNodePanel();
+//        return nodeCtrl;
+//    } else if (nodeType == "For") {
+//        // create for loop node
+//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
+//        return nodeCtrl;
+//    } else if (nodeType == "If") {
+//        // create if node
+//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
+//        return nodeCtrl;
+//    } else if (nodeType == "Main Window") {
+//        // create Main Window node
+//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
+//        return nodeCtrl;
+//    } else if (nodeType == "Identifier") {
+//        // create Id node
+//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
+//        return nodeCtrl;
+//    } else {
+//        /* cannot reach */
+//        QDebug << "fatal error, unspecified node";
+//        return NULL;
+//    }
     NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
     m_nodes.insert(nodeCtrl->getNodeHandle(), nodeCtrl);
-
+    //MainWindow::hideNewNodePanel();
     return nodeCtrl;
 }
 
@@ -111,7 +146,7 @@ bool MainCtrl::shutdown()
 
 void MainCtrl::createDefaultNode()
 {
-    NodeCtrl* newNode = createNode();
+    //NodeCtrl* newNode = createNode("Default Node");
 
 //    int plugCount = (qreal(qrand())/qreal(RAND_MAX))*12;
 //    for(int i = 0; i < plugCount + 4; ++i){
@@ -122,7 +157,7 @@ void MainCtrl::createDefaultNode()
 //        }
 //    }
 
-    newNode->setSelected(true);
+    //newNode->setSelected(true);
 }
 
 QString MainCtrl::getScript()
@@ -220,65 +255,65 @@ void MainCtrl::createScreenshotScript()
         this->deleteNode(m_nodes[node]);
     }
 
-    NodeCtrl* var1 = this->createNode("\"RegOut_7.nii.gz\"");
+    NodeCtrl* var1 = this->createNode(QString("\"RegOut_7.nii.gz\""));
     var1->getNodeHandle().setPos(-500, -680);
     var1->addOutgoingPlug("value");
 
-    NodeCtrl* loadFile = this->createNode("LoadFile");
+    NodeCtrl* loadFile = this->createNode(QString("LoadFile"));
     loadFile->getNodeHandle().setPos(-500, -480);
     loadFile->addIncomingPlug("fileName");
     loadFile->addOutgoingPlug("file");
 
-    NodeCtrl* loadFile2 = this->createNode("LoadFile");
+    NodeCtrl* loadFile2 = this->createNode(QString("LoadFile"));
     loadFile2->getNodeHandle().setPos(-100, -480);
     loadFile2->addIncomingPlug("fileName");
     loadFile2->addOutgoingPlug("file");
 
-    NodeCtrl* var2 = this->createNode("\"RegDOut_7.nii.gz\"");
+    NodeCtrl* var2 = this->createNode(QString("\"RegDOut_7.nii.gz\""));
     var2->getNodeHandle().setPos(-100, -680);
     var2->addOutgoingPlug("value");
 
-    NodeCtrl* vectorField = this->createNode("VectorField");
+    NodeCtrl* vectorField = this->createNode(QString("VectorField"));
     vectorField->addIncomingPlug("file");
     vectorField->addIncomingPlug("subSampleFactor");
     vectorField->addIncomingPlug("scaling");
     vectorField->getNodeHandle().setPos(-100, -600);
 
-    NodeCtrl* varSubSample = this->createNode("8");
+    NodeCtrl* varSubSample = this->createNode(QString("8"));
     varSubSample->getNodeHandle().setPos(-10, -600);
     varSubSample->addOutgoingPlug("value");
 
-    NodeCtrl* varScale = this->createNode("3.0");
+    NodeCtrl* varScale = this->createNode(QString("3.0"));
     varScale->getNodeHandle().setPos(-10, -550);
     varScale->addOutgoingPlug("value");
 
-    NodeCtrl* camera = this->createNode("CameraView");
+    NodeCtrl* camera = this->createNode(QString("CameraView"));
     camera->getNodeHandle().setPos(-400, -200);
     camera->addIncomingPlug("fileName");
     camera->addOutgoingPlug("file");
 
-    NodeCtrl* varCam = this->createNode("\"camera.cam\"");
+    NodeCtrl* varCam = this->createNode(QString("\"camera.cam\""));
     varCam->getNodeHandle().setPos(-450, -230);
     varCam->addOutgoingPlug("value");
 
-    NodeCtrl* importView = this->createNode("ImportView");
+    NodeCtrl* importView = this->createNode(QString("ImportView"));
     importView->getNodeHandle().setPos(-500, -400);
     importView->addIncomingPlug("image");
     importView->addOutgoingPlug("view");
 
-    NodeCtrl* screenshot = this->createNode("Screenshot");
+    NodeCtrl* screenshot = this->createNode(QString("Screenshot"));
     screenshot->getNodeHandle().setPos(-50, 0);
     screenshot->addIncomingPlug("image1");
     screenshot->addIncomingPlug("image2");
     screenshot->addIncomingPlug("camera");
     screenshot->addOutgoingPlug("outputFile");
 
-    NodeCtrl* out = this->createNode("OpenFile");
+    NodeCtrl* out = this->createNode(QString("OpenFile"));
     out->getNodeHandle().setPos(0, 30);
     out->addIncomingPlug("inputStream");
     out->addOutgoingPlug("outputFile");
 
-    NodeCtrl* varOut = this->createNode("\"screenie.png\"");
+    NodeCtrl* varOut = this->createNode(QString("\"screenie.png\""));
     varOut->addIncomingPlug("value");
     varOut->getNodeHandle().setPos(25, 100);
 
