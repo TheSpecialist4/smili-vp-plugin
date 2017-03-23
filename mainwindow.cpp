@@ -34,7 +34,14 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowTitle("Visual Programming SMILI");
-    //setWindowIcon(QIcon(":/icons/zodiac_logo.png"));
+
+    /*
+     * Need much refactoring!
+     *
+     * Just tedious GUI objects creation
+     *
+     * */
+
 
     isNewNodePanelOpen = false;
 
@@ -80,13 +87,6 @@ MainWindow::MainWindow(QWidget *parent)
     holder->setLayout(tempBox);
 
     nodePropertyTab->addTab(holder, QIcon(":/icons/menu.png"),tr("&Templates"));
-
-    //tree view to add node
-//    tempButton = new QPushButton;
-//    tempButton->setText(tr("Temporary button"));
-//    tempButton->hide();
-//    tempButton->setMaximumHeight(100);
-
 
     // grid on left side of main splitter
     QGridLayout* leftGrid = new QGridLayout;
