@@ -1,4 +1,4 @@
-#include "propertyeditor.h"
+#include "view/propertyeditor.h"
 
 #include <QVBoxLayout>
 

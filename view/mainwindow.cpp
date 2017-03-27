@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "view/mainwindow.h"
 
 #include <QApplication>
 #include <QAction>
@@ -30,6 +30,11 @@
 #include "zodiacgraph/scene.h"
 #include "zodiacgraph/view.h"
 
+#include "node/fornode.h"
+#include "node/operationnode.h"
+#include "node/startstopnode.h"
+#include "node/variablenode.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -47,7 +52,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // create the main toolbar
     QToolBar* mainToolBar = new QToolBar(this);
-    //mainToolBar->setFixedHeight(50);
     mainToolBar->setStyleSheet("QToolBar {border: 0px;}");
     mainToolBar->setIconSize(QSize(15,15));
     mainToolBar->setMovable(false);
@@ -66,7 +70,6 @@ MainWindow::MainWindow(QWidget *parent)
     PropertyEditor* propertyEditor = new PropertyEditor(this);
 
     nodePropertyTab = new QTabWidget;
-    //nodePropertyTab->setTabPosition(QnodePropertyTab::West);
 
     nodePropertyTab->addTab(propertyEditor, QIcon(":/icons/editicon.png"), tr("&Edit"));
 
@@ -102,12 +105,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(screenshotBtn, SIGNAL(clicked(bool)), m_mainCtrl, SLOT(createScreenshotScript()));
 
-    //QHBoxLayout* scriptBox = new QHBoxLayout(this);
+    // debug output area
     scriptArea = new QTextEdit(this);
     scriptArea->setStyleSheet("QTextEdit {background: #D6D5DB; color: #000000}");
     scriptArea->setStatusTip(tr("Python script generated"));
-    //scriptArea->setReadOnly(true);
-    //scriptBox->addWidget(scriptArea, 1);
 
     QSplitter* canvasSplitter = new QSplitter(Qt::Vertical, this);
     canvasSplitter->addWidget(zodiacView);
@@ -145,10 +146,9 @@ MainWindow::MainWindow(QWidget *parent)
     // initialize the GUI
     setCentralWidget(m_mainSplitter);
     readSettings();
+    //writeSettings();
     zodiacScene->updateStyle();
     zodiacView->updateStyle();
-
-    //createZodiacLogo(m_mainCtrl);
 }
 
 void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
@@ -156,12 +156,22 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     QVBoxLayout* newNodeVBoxPanel = new QVBoxLayout;
 
     QFont* font = new QFont;
-    font->setPointSize(10);
+    font->setPointSize(9);
 
-    QPushButton* btnVariable = new QPushButton;
-    btnVariable->setText("Variable");
-    btnVariable->setMinimumHeight(50);
-    btnVariable->setFont(*font);
+    QPushButton* btnStart = new QPushButton;
+    btnStart->setText("START");
+    btnStart->setMinimumHeight(50);
+    btnStart->setFont(*font);
+
+    QPushButton* btnImageVariable = new QPushButton;
+    btnImageVariable->setText("Image Variable");
+    btnImageVariable->setMinimumHeight(50);
+    btnImageVariable->setFont(*font);
+
+    QPushButton* btnModelVariable = new QPushButton;
+    btnModelVariable->setText("Model Variable");
+    btnModelVariable->setMinimumHeight(50);
+    btnModelVariable->setFont(*font);
 
     QPushButton* btnFor = new QPushButton;
     btnFor->setText("For");
@@ -172,6 +182,16 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     btnIf->setText("If/Else");
     btnIf->setMinimumHeight(50);
     btnIf->setFont(*font);
+
+    QPushButton* btnImageOperation = new QPushButton;
+    btnImageOperation->setText("Image Operation");
+    btnImageOperation->setMinimumHeight(50);
+    btnImageOperation->setFont(*font);
+
+    QPushButton* btnModelOperation = new QPushButton;
+    btnModelOperation->setText("Model Operation");
+    btnModelOperation->setMinimumHeight(50);
+    btnModelOperation->setFont(*font);
 
     QPushButton* btnMainWindow = new QPushButton;
     btnMainWindow->setText("Main Window");
@@ -188,13 +208,30 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     btnPython->setMinimumHeight(50);
     btnPython->setFont(*font);
 
+    QPushButton* btnEnd = new QPushButton;
+    btnEnd->setText("END");
+    btnEnd->setMinimumHeight(50);
+    btnEnd->setFont(*font);
+
     QSignalMapper* signalMapper = new QSignalMapper(this);
 
-    connect(btnVariable, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnVariable, QString("Variable"));
+    connect(btnStart, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(btnStart, QString("START"));
+
+    connect(btnImageVariable, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(btnImageVariable, QString("Image Variable"));
+
+    connect(btnModelVariable, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(btnModelVariable, QString("Model Variable"));
 
     connect(btnFor, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnFor, QString("For"));
+
+    connect(btnImageOperation, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(btnImageOperation, QString("Image Operation"));
+
+    connect(btnModelOperation, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(btnModelOperation, QString("Model Operation"));
 
     connect(btnIf, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnIf, QString("If"));
@@ -208,14 +245,22 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     connect(btnPython, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnPython, QString("Python"));
 
+    connect(btnEnd, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(btnEnd, QString("END"));
+
     connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(createNewNode(QString)));
 
-    newNodeVBoxPanel->addWidget(btnVariable);
+    newNodeVBoxPanel->addWidget(btnStart);
+    newNodeVBoxPanel->addWidget(btnImageVariable);
+    newNodeVBoxPanel->addWidget(btnModelVariable);
     newNodeVBoxPanel->addWidget(btnFor);
     newNodeVBoxPanel->addWidget(btnIf);
+    newNodeVBoxPanel->addWidget(btnImageOperation);
+    newNodeVBoxPanel->addWidget(btnModelOperation);
     newNodeVBoxPanel->addWidget(btnMainWindow);
     newNodeVBoxPanel->addWidget(btnIdentifier);
     newNodeVBoxPanel->addWidget(btnPython);
+    newNodeVBoxPanel->addWidget(btnEnd);
 
     newNodeLayoutHolder = new QWidget;
     newNodeLayoutHolder->setLayout(newNodeVBoxPanel);
@@ -230,7 +275,45 @@ void MainWindow::createNewNode(QString nodeName) {
     isNewNodePanelOpen = false;
     nodePropertyTab->show();
     newNodeLayoutHolder->hide();
-    m_mainCtrl->createNode(nodeName);
+
+    bool isPresent = false;
+
+    NodeBase* node;
+
+    NodeCtrl* nodeCtrl = m_mainCtrl->createNode(nodeName);
+
+    if (nodeName == "Image Variable") {
+        node = new VariableNode("Image Variable");
+        ((VariableNode*)node)->isImageNode(true);
+        isPresent = true;
+    } else if (nodeName == "Model Variable") {
+        node = new VariableNode("Model Variable");
+        ((VariableNode*)node)->isImageNode(false);
+        isPresent = true;
+    } else if (nodeName == "START") {
+        node = new StartStopNode("START", true);
+        isPresent = true;
+    } else if (nodeName == "END") {
+        node = new StartStopNode("END", false);
+        isPresent = true;
+    } else if (nodeName == "For") {
+        node = new ForNode("For");
+        isPresent = true;
+    } else if (nodeName == "Image Operation") {
+        node = new OperationNode("Image Operation");
+        ((OperationNode*)node)->isImageNode(true);
+        isPresent = true;
+    } else if (nodeName == "Model Operation") {
+        node = new OperationNode("Model Operation");
+        ((OperationNode*)node)->isImageNode(false);
+        isPresent = true;
+    }
+
+
+    if (isPresent) {
+        nodeCtrl->setNodeBase(node);
+        nodeCtrl->createPlugs();
+    }
 }
 
 //void MainWindow::hideNewNodePanel() {
@@ -288,7 +371,7 @@ void MainWindow::readSettings()
     palette.setColor(QPalette::WindowText, settings.value("windowText", "#E0E2E4").toString());
     palette.setColor(QPalette::Base, settings.value("base", "#191919").toString());
     palette.setColor(QPalette::AlternateBase, settings.value("alternateBase", "#353535").toString());
-    //palette.setColor(QPalette::ToolTipBase, settings.value("toolTipBase", "#000000").toString());
+    palette.setColor(QPalette::ToolTipBase, settings.value("toolTipBase", "#000000").toString());
     palette.setColor(QPalette::ToolTipBase, settings.value("toolTipBase", "#292C2E").toString());
     palette.setColor(QPalette::ToolTipText, settings.value("toolTipText", "#808080").toString());
     palette.setColor(QPalette::Text, settings.value("text", "#E0E2E4").toString());

@@ -1,4 +1,4 @@
-#include "collapsible.h"
+#include "view/collapsible.h"
 
 #include <QFontMetrics>
 #include <QPainter>

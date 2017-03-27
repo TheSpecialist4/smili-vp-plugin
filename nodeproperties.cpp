@@ -6,7 +6,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#include "collapsible.h"
+#include "view/collapsible.h"
 #include "nodectrl.h"
 
 QString NodeProperties::s_defaultPlugName = "plug";
@@ -45,6 +45,7 @@ NodeProperties::NodeProperties(NodeCtrl *node, Collapsible *parent)
     m_plugLayout->addWidget(new QLabel("Plugs", this), 0, 0, 1, 2, Qt::AlignLeft);
     m_plugLayout->addWidget(m_addPlugButton, 0, 2);
     connect(m_addPlugButton, SIGNAL(pressed()), this, SLOT(createNewPlug()));
+    m_addPlugButton->hide();
 
     // define the plugs
     for(zodiac::PlugHandle& plug : m_node->getPlugHandles()){
@@ -113,6 +114,8 @@ PlugRow::PlugRow(NodeProperties* editor, zodiac::PlugHandle plug,
     , m_directionToggle(directionToggle)
     , m_removalButton(removalButton)
 {
+    m_removalButton->hide();
+
     connect(m_nameEdit, SIGNAL(editingFinished()), this, SLOT(renamePlug()));
     connect(m_directionToggle, SIGNAL(clicked()), this, SLOT(togglePlugDirection()));
     connect(m_removalButton, SIGNAL(clicked()), this, SLOT(removePlug()));

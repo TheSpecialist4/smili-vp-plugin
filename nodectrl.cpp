@@ -25,6 +25,7 @@ NodeCtrl::NodeCtrl(MainCtrl* manager,  zodiac::NodeHandle node)
 void NodeCtrl::rename(const QString& name)
 {
     m_node.rename(name);
+    node->setName(name);
 }
 
 QString NodeCtrl::renamePlug(const QString& oldName, const QString& newName)
@@ -141,4 +142,19 @@ void NodeCtrl::outputDisconnected(PlugHandle myOutput, PlugHandle otherInput)
 {
     m_plugs[myOutput].removeOne(otherInput);
     Q_ASSERT(m_plugs[myOutput].count(otherInput) == 0);
+}
+
+void NodeCtrl::setNodeBase(NodeBase *node) {
+    this->node = node;
+}
+
+void NodeCtrl::createPlugs() {
+    int index = 1;
+    for(auto plug : node->getInPlugs()) {
+        this->addIncomingPlug(plug);
+    }
+    index = 1;
+    for (auto plug : node->getOutPlugs()) {
+        this->addOutgoingPlug(plug);
+    }
 }

@@ -1,11 +1,11 @@
 #include "mainctrl.h"
-#include "mainwindow.h"
+#include "view/mainwindow.h"
 
 #include <QDebug>
 #include <cstdlib>
 
 #include "nodectrl.h"
-#include "propertyeditor.h"
+#include "view/propertyeditor.h"
 #include "zodiacgraph/nodehandle.h"
 
 QString MainCtrl::s_defaultName = "Node ";
@@ -107,8 +107,10 @@ void MainCtrl::printZodiacScene()
         QString nodeCtrl = "nodeCtrl" + QString::number(number);
         QPointF pos = node.getPos();
 
-        qDebug() << "NodeCtrl* nodeCtrl" + QString::number(number) + " = mainCtrl->createNode(\"" + node.getName() + "\");";
-        qDebug() << nodeCtrl + "->getNodeHandle().setPos(" + QString::number(pos.x()) + ", " + QString::number(pos.y()) + ");";
+        qDebug() << "NodeCtrl* nodeCtrl" + QString::number(number) +
+                    " = mainCtrl->createNode(\"" + node.getName() + "\");";
+        qDebug() << nodeCtrl + "->getNodeHandle().setPos(" +
+                    QString::number(pos.x()) + ", " + QString::number(pos.y()) + ");";
 
         for(zodiac::PlugHandle plug : node.getPlugs()){
             if(plug.isIncoming()){
@@ -129,7 +131,9 @@ void MainCtrl::printZodiacScene()
             for(zodiac::PlugHandle otherPlug : plug.getConnectedPlugs()){
                 int otherNumber = otherPlug.getNode().getName().right(2).trimmed().toInt();
                 QString otherNodeCtrl = "nodeCtrl" + QString::number(otherNumber);
-                qDebug() << nodeCtrl + "->getNodeHandle().getPlug(\"" + plug.getName() + "\").connectPlug(" + otherNodeCtrl + "->getNodeHandle().getPlug(\"" + otherPlug.getName() + "\"));";
+                qDebug() << nodeCtrl + "->getNodeHandle().getPlug(\"" + plug.getName()
+                            + "\").connectPlug(" + otherNodeCtrl + "->getNodeHandle().getPlug(\""
+                            + otherPlug.getName() + "\"));";
             }
         }
     }

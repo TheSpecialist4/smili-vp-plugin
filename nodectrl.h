@@ -25,6 +25,8 @@
 #include "zodiacgraph/nodehandle.h"
 #include "zodiacgraph/plughandle.h"
 
+#include "node/nodebase.h"
+
 class MainCtrl;
 
 ///
@@ -138,6 +140,17 @@ public: // methods
     ///
     void setSelected(bool isSelected);
 
+    ///
+    /// \brief Set the node type associated with this NodeCtrl
+    /// \param node
+    ///
+    void setNodeBase(NodeBase* node);
+
+    ///
+    /// \brief Creates all the plugs associated with the node
+    ///
+    void createPlugs();
+
 public slots:
 
     ///
@@ -213,6 +226,8 @@ private: // members
     /// The value of the hash is a list of all connected plugs, so they can update when a plug is renamed.
     ///
     QHash<zodiac::PlugHandle, QList<zodiac::PlugHandle>> m_plugs;
+
+    NodeBase* node;
 };
 
 #endif // NODECTRL_H

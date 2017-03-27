@@ -33,12 +33,12 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp \
-    collapsible.cpp \
+        view/mainwindow.cpp \
+    view/collapsible.cpp \
     mainctrl.cpp \
     nodectrl.cpp \
     nodeproperties.cpp \
-    propertyeditor.cpp \
+    view/propertyeditor.cpp \
     zodiacgraph/baseedge.cpp \
     zodiacgraph/bezieredge.cpp \
     zodiacgraph/drawedge.cpp \
@@ -62,14 +62,18 @@ SOURCES += main.cpp\
     zodiacgraph/straightdoubleedge.cpp \
     zodiacgraph/straightedge.cpp \
     zodiacgraph/view.cpp \
-    nodemetadata.cpp
+    node/nodebase.cpp \
+    node/variablenode.cpp \
+    node/startstopnode.cpp \
+    node/operationnode.cpp \
+    node/fornode.cpp
 
-HEADERS  += mainwindow.h \
-    collapsible.h \
+HEADERS  += view/mainwindow.h \
+    view/collapsible.h \
     mainctrl.h \
     nodectrl.h \
     nodeproperties.h \
-    propertyeditor.h \
+    view/propertyeditor.h \
     zodiacgraph/baseedge.h \
     zodiacgraph/bezieredge.h \
     zodiacgraph/drawedge.h \
@@ -94,7 +98,11 @@ HEADERS  += mainwindow.h \
     zodiacgraph/straightedge.h \
     zodiacgraph/utils.h \
     zodiacgraph/view.h \
-    nodemetadata.h
+    node/nodebase.h \
+    node/variablenode.h \
+    node/startstopnode.h \
+    node/operationnode.h \
+    node/fornode.h
 
 RESOURCES += \
     res/icons.qrc
