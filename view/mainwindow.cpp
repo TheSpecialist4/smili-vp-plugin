@@ -15,6 +15,8 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QSignalMapper>
+#include <QLabel>
+#include <QComboBox>
 
 #include "nodectrl.h"
 #include "mainctrl.h"
@@ -40,15 +42,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    resize(700,800);
     setWindowTitle("Visual Programming SMILI");
-
-    /*
-     * Need much refactoring!
-     *
-     * Just tedious GUI objects creation
-     *
-     * */
-
 
     isNewNodePanelOpen = false;
 
@@ -161,62 +156,152 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
 
     QFont* font = new QFont;
     font->setPointSize(9);
+    int buttonHeight = 40;
 
+    //------START---------------------------------
     QPushButton* btnStart = new QPushButton;
     btnStart->setText("START");
-    btnStart->setMinimumHeight(50);
+    btnStart->setMinimumHeight(buttonHeight);
     btnStart->setFont(*font);
 
+    //-------ImageVariable-----------------------------
     QPushButton* btnImageVariable = new QPushButton;
     btnImageVariable->setText("Image Variable");
-    btnImageVariable->setMinimumHeight(50);
+    btnImageVariable->setMinimumHeight(buttonHeight);
     btnImageVariable->setFont(*font);
 
+    //---------ModelVariable-----------------------------
     QPushButton* btnModelVariable = new QPushButton;
     btnModelVariable->setText("Model Variable");
-    btnModelVariable->setMinimumHeight(50);
+    btnModelVariable->setMinimumHeight(buttonHeight);
     btnModelVariable->setFont(*font);
 
+    //------For----------------------------------------
     QPushButton* btnFor = new QPushButton;
     btnFor->setText("For");
-    btnFor->setMinimumHeight(50);
+    btnFor->setMinimumHeight(buttonHeight);
     btnFor->setFont(*font);
 
+    //--------If-----------------------------------------
     QPushButton* btnIf = new QPushButton;
     btnIf->setText("If/Else");
-    btnIf->setMinimumHeight(50);
+    btnIf->setMinimumHeight(buttonHeight);
     btnIf->setFont(*font);
 
+    //--------ImageOperation------------------------------
+    QVBoxLayout* imageOpLayout = new QVBoxLayout;
+    QLabel* labelImageOp = new QLabel(QString("Image Operation"));
+    labelImageOp->setFont(*font);
+
+    QComboBox* comboImageOp = new QComboBox;
+    comboImageOp->setMinimumHeight(30);
+    comboImageOp->addItem(QString("contour"));
+    comboImageOp->addItem(QString("vectorField"));
+    comboImageOp->addItem(QString("rescale"));
+
     QPushButton* btnImageOperation = new QPushButton;
-    btnImageOperation->setText("Image Operation");
-    btnImageOperation->setMinimumHeight(50);
-    btnImageOperation->setFont(*font);
+    btnImageOperation->setText("Create");
+    btnImageOperation->setMinimumHeight(20);
+    //btnImageOperation->setFont(*font);
+
+    imageOpLayout->addWidget(labelImageOp);
+    imageOpLayout->addWidget(comboImageOp);
+    imageOpLayout->addWidget(btnImageOperation);
+
+    QWidget* imageOpHolder = new QWidget;
+    imageOpHolder->setLayout(imageOpLayout);
+    imageOpHolder->setMaximumHeight(100);
+    imageOpHolder->setStyleSheet(QString(".QWidget{border: 1px solid #ccc;background: #e8edeb}"));
+
+    //--------ModelOperation-------------------------------
+    QVBoxLayout* modelOpLayout = new QVBoxLayout;
+    QLabel* labelModelOp = new QLabel(QString("Model Operation"));
+    labelModelOp->setFont(*font);
+
+    QComboBox* comboModelOp = new QComboBox;
+    comboModelOp->setMinimumHeight(30);
+    comboModelOp->addItem(QString("loadView"));
+    comboModelOp->addItem(QString("clean"));
+    comboModelOp->addItem(QString("smooth"));
 
     QPushButton* btnModelOperation = new QPushButton;
-    btnModelOperation->setText("Model Operation");
-    btnModelOperation->setMinimumHeight(50);
-    btnModelOperation->setFont(*font);
+    btnModelOperation->setText("Create");
+    btnModelOperation->setMinimumHeight(20);
+    //btnModelOperation->setFont(*font);
+
+    modelOpLayout->addWidget(labelModelOp);
+    modelOpLayout->addWidget(comboModelOp);
+    modelOpLayout->addWidget(btnModelOperation);
+
+    QWidget* modelOpHolder = new QWidget;
+    modelOpHolder->setLayout(modelOpLayout);
+    modelOpHolder->setMaximumHeight(100);
+    modelOpHolder->setStyleSheet(QString(".QWidget{border: 1px solid #ccc;background: #e8edeb}"));
+
+    //---------MainWindow-----------------------------------
+    QVBoxLayout* mainWindowLayout = new QVBoxLayout;
+    QLabel* labelMW = new QLabel(QString("Main Window"));
+    labelMW->setFont(*font);
+
+    QComboBox* comboMW = new QComboBox;
+    comboMW->setMinimumHeight(30);
+    comboMW->setFont(*font);
+    comboMW->addItem(QString("loadFile"));
+    comboMW->addItem(QString("activeImage"));
+    comboMW->addItem(QString("activeModel"));
+    comboMW->addItem(QString("titleTab"));
+    comboMW->addItem(QString("saveScreen"));
 
     QPushButton* btnMainWindow = new QPushButton;
-    btnMainWindow->setText("Main Window");
-    btnMainWindow->setMinimumHeight(50);
-    btnMainWindow->setFont(*font);
+    btnMainWindow->setText("Create");
+    btnMainWindow->setMinimumHeight(20);
+    //btnMainWindow->setFont(*font);
 
+    mainWindowLayout->addWidget(labelMW);
+    mainWindowLayout->addWidget(comboMW);
+    mainWindowLayout->addWidget(btnMainWindow);
+
+    QWidget* mwWidget = new QWidget;
+    mwWidget->setLayout(mainWindowLayout);
+    mwWidget->setMaximumHeight(100);
+    mwWidget->setStyleSheet(QString(".QWidget{border: 1px solid #ccc;background: #e8edeb}"));
+
+    //------Value------------------------------------
     QPushButton* btnValue = new QPushButton;
     btnValue->setText("Value");
-    btnValue->setMinimumHeight(50);
-    btnValue->setFont(*font);
+    btnValue->setMinimumHeight(buttonHeight);
+
+    //----------python-------------------------------
+    QVBoxLayout* pythonLayout = new QVBoxLayout;
+    QLabel* labelPython = new QLabel(QString("Python"));
+    labelPython->setFont(*font);
+
+    QComboBox* comboPython = new QComboBox;
+    comboPython->setMinimumHeight(30);
+    comboPython->setFont(*font);
+    comboPython->addItem(QString("Python.print"));
+    comboPython->addItem(QString("Python.exec"));
 
     QPushButton* btnPython = new QPushButton;
-    btnPython->setText("Python Print");
-    btnPython->setMinimumHeight(50);
-    btnPython->setFont(*font);
+    btnPython->setText("Create");
+    btnPython->setMinimumHeight(20);
+    //btnPython->setFont(*font);
 
+    pythonLayout->addWidget(labelPython);
+    pythonLayout->addWidget(comboPython);
+    pythonLayout->addWidget(btnPython);
+    QWidget* pythonHolder = new QWidget;
+    pythonHolder->setLayout(pythonLayout);
+    pythonHolder->setStyleSheet(QString(".QWidget{border: 1px solid #ccc;background: #e8edeb}"));
+    pythonHolder->setMaximumHeight(100);
+
+    //------END------------------------------------------------------
     QPushButton* btnEnd = new QPushButton;
     btnEnd->setText("END");
-    btnEnd->setMinimumHeight(50);
+    btnEnd->setMinimumHeight(buttonHeight);
     btnEnd->setFont(*font);
 
+    //----SignalMapper-----------------------------------------------
     QSignalMapper* signalMapper = new QSignalMapper(this);
 
     connect(btnStart, SIGNAL(clicked()), signalMapper, SLOT(map()));
@@ -259,11 +344,11 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     newNodeVBoxPanel->addWidget(btnModelVariable);
     newNodeVBoxPanel->addWidget(btnFor);
     newNodeVBoxPanel->addWidget(btnIf);
-    newNodeVBoxPanel->addWidget(btnImageOperation);
-    newNodeVBoxPanel->addWidget(btnModelOperation);
-    newNodeVBoxPanel->addWidget(btnMainWindow);
+    newNodeVBoxPanel->addWidget(imageOpHolder);
+    newNodeVBoxPanel->addWidget(modelOpHolder);
+    newNodeVBoxPanel->addWidget(mwWidget);
     newNodeVBoxPanel->addWidget(btnValue);
-    newNodeVBoxPanel->addWidget(btnPython);
+    newNodeVBoxPanel->addWidget(pythonHolder);
     newNodeVBoxPanel->addWidget(btnEnd);
 
     newNodeLayoutHolder = new QWidget;
