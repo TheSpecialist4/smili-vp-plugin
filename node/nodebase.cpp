@@ -1,9 +1,10 @@
 #include "node/nodebase.h"
 
-NodeBase::NodeBase(QString name)
+NodeBase::NodeBase(QString name, NodeType nodeType)
     : name(name),
       inPlugs(QList<QString>()),
-      outPlugs(QList<QString>())
+      outPlugs(QList<QString>()),
+      nodeType(nodeType)
 {
     inPlugs.append(QString("IN PIPE"));
     outPlugs.append(QString("OUT PIPE"));
@@ -39,4 +40,8 @@ QList<QString> NodeBase::getInPlugs() {
 
 QList<QString> NodeBase::getOutPlugs() {
     return outPlugs;
+}
+
+NodeType NodeBase::getNodeType() {
+    return nodeType;
 }

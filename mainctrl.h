@@ -108,7 +108,7 @@ public slots:
 
     void saveScript();
 
-    void loadScript();
+    void generateScript();
 
     NodeCtrl* createNode(QString& nodeType);
 

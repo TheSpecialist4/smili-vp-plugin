@@ -8,7 +8,7 @@ class QString;
 class StartStopNode : public NodeBase
 {
 public:
-    StartStopNode(QString name, bool isStart);
+    StartStopNode(QString name, bool isStart, NodeType nodeType);
 
 private:
     bool isStart;

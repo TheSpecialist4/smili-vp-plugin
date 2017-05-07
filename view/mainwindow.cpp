@@ -34,6 +34,8 @@
 #include "node/operationnode.h"
 #include "node/startstopnode.h"
 #include "node/variablenode.h"
+#include "node/valuenode.h"
+#include "node/pythonprintnode.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -49,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     isNewNodePanelOpen = false;
+
+    scriptText = new QString();
 
     // create the main toolbar
     QToolBar* mainToolBar = new QToolBar(this);
@@ -132,7 +136,7 @@ MainWindow::MainWindow(QWidget *parent)
     QAction* generateScriptAction = new QAction(QIcon(":/icons/gear.png"), tr("&Generate Script"), this);
     generateScriptAction->setStatusTip(tr("Generate Script"));
     mainToolBar->addAction(generateScriptAction);
-    connect(generateScriptAction, SIGNAL(triggered()), this, SLOT(displayScript()));
+    connect(generateScriptAction, SIGNAL(triggered()), m_mainCtrl, SLOT(generateScript()));
 
     QWidget* emptySpacer = new QWidget();
     emptySpacer->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
@@ -198,13 +202,13 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     btnMainWindow->setMinimumHeight(50);
     btnMainWindow->setFont(*font);
 
-    QPushButton* btnIdentifier = new QPushButton;
-    btnIdentifier->setText("Identifier");
-    btnIdentifier->setMinimumHeight(50);
-    btnIdentifier->setFont(*font);
+    QPushButton* btnValue = new QPushButton;
+    btnValue->setText("Value");
+    btnValue->setMinimumHeight(50);
+    btnValue->setFont(*font);
 
     QPushButton* btnPython = new QPushButton;
-    btnPython->setText("Python Inbuilt");
+    btnPython->setText("Python Print");
     btnPython->setMinimumHeight(50);
     btnPython->setFont(*font);
 
@@ -239,11 +243,11 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     connect(btnMainWindow, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnMainWindow, QString("Main Window"));
 
-    connect(btnIdentifier, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnIdentifier, QString("Identifier"));
+    connect(btnValue, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(btnValue, QString("Value"));
 
     connect(btnPython, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnPython, QString("Python"));
+    signalMapper->setMapping(btnPython, QString("Python Print"));
 
     connect(btnEnd, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnEnd, QString("END"));
@@ -258,7 +262,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     newNodeVBoxPanel->addWidget(btnImageOperation);
     newNodeVBoxPanel->addWidget(btnModelOperation);
     newNodeVBoxPanel->addWidget(btnMainWindow);
-    newNodeVBoxPanel->addWidget(btnIdentifier);
+    newNodeVBoxPanel->addWidget(btnValue);
     newNodeVBoxPanel->addWidget(btnPython);
     newNodeVBoxPanel->addWidget(btnEnd);
 
@@ -283,29 +287,35 @@ void MainWindow::createNewNode(QString nodeName) {
     NodeCtrl* nodeCtrl = m_mainCtrl->createNode(nodeName);
 
     if (nodeName == "Image Variable") {
-        node = new VariableNode("Image Variable");
+        node = new VariableNode("Image Variable", NodeType::VAR_NODE);
         ((VariableNode*)node)->isImageNode(true);
         isPresent = true;
     } else if (nodeName == "Model Variable") {
-        node = new VariableNode("Model Variable");
+        node = new VariableNode("Model Variable", NodeType::VAR_NODE);
         ((VariableNode*)node)->isImageNode(false);
         isPresent = true;
     } else if (nodeName == "START") {
-        node = new StartStopNode("START", true);
+        node = new StartStopNode("START", true, NodeType::START_STOP_NODE);
         isPresent = true;
     } else if (nodeName == "END") {
-        node = new StartStopNode("END", false);
+        node = new StartStopNode("END", false, NodeType::START_STOP_NODE);
         isPresent = true;
     } else if (nodeName == "For") {
-        node = new ForNode("For");
+        node = new ForNode("For", NodeType::FOR_NODE);
         isPresent = true;
     } else if (nodeName == "Image Operation") {
-        node = new OperationNode("Image Operation");
+        node = new OperationNode("Image Operation", NodeType::OP_NODE);
         ((OperationNode*)node)->isImageNode(true);
         isPresent = true;
     } else if (nodeName == "Model Operation") {
-        node = new OperationNode("Model Operation");
+        node = new OperationNode("Model Operation", NodeType::OP_NODE);
         ((OperationNode*)node)->isImageNode(false);
+        isPresent = true;
+    } else if (nodeName == "Value") {
+        node = new ValueNode("Value", NodeType::VALUE_NODE);
+        isPresent = true;
+    } else if (nodeName == "Python Print") {
+        node = new PythonPrintNode("Python Print", NodeType::PYTHON_PRINT_NODE);
         isPresent = true;
     }
 
@@ -314,6 +324,11 @@ void MainWindow::createNewNode(QString nodeName) {
         nodeCtrl->setNodeBase(node);
         nodeCtrl->createPlugs();
     }
+}
+
+void MainWindow::appendToScriptArea(QString& text) {
+    scriptText->append(text);
+    scriptArea->setText(*scriptText);
 }
 
 //void MainWindow::hideNewNodePanel() {

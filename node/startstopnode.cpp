@@ -2,8 +2,8 @@
 
 #include <QDebug>
 
-StartStopNode::StartStopNode(QString name, bool isStart)
-    : NodeBase(name)
+StartStopNode::StartStopNode(QString name, bool isStart, NodeType nodeType)
+    : NodeBase(name, nodeType)
 {
     this->isStart = isStart;
 

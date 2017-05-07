@@ -8,7 +8,7 @@ class QString;
 class ForNode : public NodeBase
 {
 public:
-    ForNode(QString name);
+    ForNode(QString name, NodeType nodeType);
 };
 
 #endif // FORNODE_H

@@ -8,7 +8,7 @@
 class VariableNode : public NodeBase
 {
 public:
-    VariableNode(QString name);
+    VariableNode(QString name, NodeType nodeType);
 
     void isImageNode(bool isImage);
 

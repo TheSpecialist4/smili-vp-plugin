@@ -5,12 +5,14 @@
 #include <QString>
 #include <QList>
 
+#include "nodetype.h"
+
 class NodeBase : public QObject
 {
     Q_OBJECT
 
 public:
-    NodeBase(QString name);
+    NodeBase(QString name, NodeType nodeType);
 
     QString getName();
 
@@ -19,6 +21,8 @@ public:
     QList<QString> getOutPlugs();
 
     QList<QString> getInPlugs();
+
+    NodeType getNodeType();
 
 protected:
     void addInPlug(QString inPlugName);
@@ -32,6 +36,8 @@ private: //members
 
     QList<QString> inPlugs;
     QList<QString> outPlugs;
+
+    NodeType nodeType;
 };
 
 #endif // NODEBASE_H

@@ -66,7 +66,11 @@ SOURCES += main.cpp\
     node/variablenode.cpp \
     node/startstopnode.cpp \
     node/operationnode.cpp \
-    node/fornode.cpp
+    node/fornode.cpp \
+    node/valuenode.cpp \
+    errorchecker.cpp \
+    parser.cpp \
+    node/pythonprintnode.cpp
 
 HEADERS  += view/mainwindow.h \
     view/collapsible.h \
@@ -102,7 +106,12 @@ HEADERS  += view/mainwindow.h \
     node/variablenode.h \
     node/startstopnode.h \
     node/operationnode.h \
-    node/fornode.h
+    node/fornode.h \
+    nodetype.h \
+    node/valuenode.h \
+    errorchecker.h \
+    parser.h \
+    node/pythonprintnode.h
 
 RESOURCES += \
     res/icons.qrc

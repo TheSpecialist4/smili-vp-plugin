@@ -8,7 +8,7 @@ class QString;
 class OperationNode : public NodeBase
 {
 public:
-    OperationNode(QString name);
+    OperationNode(QString name, NodeType nodeType);
 
     void isImageNode(bool isImage);
 

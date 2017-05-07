@@ -7,6 +7,8 @@
 #include "nodectrl.h"
 #include "view/propertyeditor.h"
 #include "zodiacgraph/nodehandle.h"
+#include "parser.h"
+#include "errorchecker.h"
 
 QString MainCtrl::s_defaultName = "Node ";
 
@@ -26,52 +28,13 @@ MainCtrl::MainCtrl(QObject *parent, zodiac::Scene* scene, PropertyEditor* proper
 NodeCtrl* MainCtrl::createNode(QString &nodeType)
 {
     // the newly created Node is the only selected one to avoid confusion
-//    m_scene.deselectAll();
-
-//    // use the given name or construct a default one
-//    QString nodeName = name;
-//    if(nodeName.isEmpty()){
-//        nodeName = s_defaultName + QString::number(m_nodeIndex++);
-//    }
-
-//    // create the node
-//    NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
-//    m_nodes.insert(nodeCtrl->getNodeHandle(), nodeCtrl);
-
-//    return nodeCtrl;
-
     m_scene.deselectAll();
 
     QString nodeName = nodeType;
-//    if (nodeType == "Variable") {
-//        //create variable node
-//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
-//        MainWindow::hideNewNodePanel();
-//        return nodeCtrl;
-//    } else if (nodeType == "For") {
-//        // create for loop node
-//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
-//        return nodeCtrl;
-//    } else if (nodeType == "If") {
-//        // create if node
-//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
-//        return nodeCtrl;
-//    } else if (nodeType == "Main Window") {
-//        // create Main Window node
-//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
-//        return nodeCtrl;
-//    } else if (nodeType == "Identifier") {
-//        // create Id node
-//        NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
-//        return nodeCtrl;
-//    } else {
-//        /* cannot reach */
-//        QDebug << "fatal error, unspecified node";
-//        return NULL;
-//    }
     NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
     m_nodes.insert(nodeCtrl->getNodeHandle(), nodeCtrl);
     //MainWindow::hideNewNodePanel();
+
     return nodeCtrl;
 }
 
@@ -181,7 +144,7 @@ void MainCtrl::saveScript()
     QList<zodiac::NodeHandle> ready;
     QList<zodiac::NodeHandle> processed;
 
-    qDebug() << getScript();
+    qDebug() << QString(getScript());
     //qDebug() << "allNodes Size: " << allNodes.size();
 
     processNodes(allNodes, ready, processed);
@@ -211,12 +174,18 @@ void MainCtrl::processNodes(QList<zodiac::NodeHandle> allNodes,
         allNodes.removeAt(0);
     }
     /*
+     * ###################################
+     *  Algorithm
+     * ###################################
+     *
      * save (ready[0]);
      * for (neighbor : ready[0].neighbors) {
      *   ready.append(neighbor);
      * }
      * processed.append(ready[0]);
      * ready.removeAt(0);
+     *
+     * ###################################
      */
     saveNode(ready[0]);
     for (auto plug : ready[0].getPlugs()) {
@@ -248,9 +217,12 @@ bool MainCtrl::saveNode(zodiac::NodeHandle node)
     return true;
 }
 
-void MainCtrl::loadScript()
+void MainCtrl::generateScript()
 {
-
+    Parser* parser = new Parser(m_nodes);
+    auto error = parser->parseGraph(m_nodes.values());
+    qDebug() << "Errors:\n" << (error.getErrorMessage()) << "\n";
+    qDebug() << "Script:\n" << (parser->getScript());
 }
 
 void MainCtrl::createScreenshotScript()

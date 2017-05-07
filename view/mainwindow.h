@@ -35,6 +35,8 @@ class QPushButton;
 class QVBoxLayout;
 class QGridLayout;
 
+#include "nodetype.h"
+
 ///
 /// \brief A single instance of this class contains all other widgets of the application.
 ///
@@ -52,6 +54,8 @@ public: // methods
     /// \param parent   Qt parent.
     ///
     MainWindow(QWidget *parent=0);
+
+    void appendToScriptArea(QString &text);
 
 //public: //static methods
 
@@ -121,6 +125,8 @@ private: // members
     bool isNewNodePanelOpen;
 
     QWidget* newNodeLayoutHolder;
+
+    QString* scriptText;
 
 };
 

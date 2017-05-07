@@ -1,7 +1,7 @@
 #include "operationnode.h"
 
-OperationNode::OperationNode(QString name)
-    : NodeBase(name)
+OperationNode::OperationNode(QString name, NodeType nodeType)
+    : NodeBase(name, nodeType)
 {
     isImage = true;
 

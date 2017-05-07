@@ -148,6 +148,10 @@ void NodeCtrl::setNodeBase(NodeBase *node) {
     this->node = node;
 }
 
+NodeBase* NodeCtrl::getNodeBase() {
+    return this->node;
+}
+
 void NodeCtrl::createPlugs() {
     int index = 1;
     for(auto plug : node->getInPlugs()) {

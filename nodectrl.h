@@ -146,6 +146,8 @@ public: // methods
     ///
     void setNodeBase(NodeBase* node);
 
+    NodeBase* getNodeBase();
+
     ///
     /// \brief Creates all the plugs associated with the node
     ///
