@@ -17,6 +17,7 @@
 #include <QSignalMapper>
 #include <QLabel>
 #include <QComboBox>
+#include <QScrollArea>
 
 #include "nodectrl.h"
 #include "mainctrl.h"
@@ -42,7 +43,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    resize(700,800);
+    //resize(1100,700);
     setWindowTitle("Visual Programming SMILI");
 
     isNewNodePanelOpen = false;
@@ -145,7 +146,7 @@ MainWindow::MainWindow(QWidget *parent)
     // initialize the GUI
     setCentralWidget(m_mainSplitter);
     readSettings();
-    //writeSettings();
+    writeSettings();
     zodiacScene->updateStyle();
     zodiacView->updateStyle();
 }
@@ -255,7 +256,6 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     QPushButton* btnMainWindow = new QPushButton;
     btnMainWindow->setText("Create");
     btnMainWindow->setMinimumHeight(20);
-    //btnMainWindow->setFont(*font);
 
     mainWindowLayout->addWidget(labelMW);
     mainWindowLayout->addWidget(comboMW);
@@ -270,6 +270,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     QPushButton* btnValue = new QPushButton;
     btnValue->setText("Value");
     btnValue->setMinimumHeight(buttonHeight);
+    btnValue->setFont(*font);
 
     //----------python-------------------------------
     QVBoxLayout* pythonLayout = new QVBoxLayout;
@@ -351,19 +352,21 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     newNodeVBoxPanel->addWidget(pythonHolder);
     newNodeVBoxPanel->addWidget(btnEnd);
 
-    newNodeLayoutHolder = new QWidget;
+    QWidget* newNodeLayoutHolder = new QWidget;
     newNodeLayoutHolder->setLayout(newNodeVBoxPanel);
+    newNodeLayoutHolder->setMinimumWidth(150);
 
-    leftGrid->addWidget(newNodeLayoutHolder);
+    newNodePanel = new QScrollArea;
+    newNodePanel->setWidget(newNodeLayoutHolder);
 
-    newNodeLayoutHolder->hide();
-
+    leftGrid->addWidget(newNodePanel);
+    newNodePanel->hide();
 }
 
 void MainWindow::createNewNode(QString nodeName) {
     isNewNodePanelOpen = false;
     nodePropertyTab->show();
-    newNodeLayoutHolder->hide();
+    newNodePanel->hide();
 
     bool isPresent = false;
 
@@ -426,7 +429,7 @@ void MainWindow::toggleNewNodePanelVisibility()
     // hide current selected node properties
     (!isNewNodePanelOpen) ? nodePropertyTab->show() : nodePropertyTab->hide();
     // show new node panel
-    (isNewNodePanelOpen) ? newNodeLayoutHolder->show() : newNodeLayoutHolder->hide();
+    (isNewNodePanelOpen) ? newNodePanel->show() : newNodePanel->hide();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

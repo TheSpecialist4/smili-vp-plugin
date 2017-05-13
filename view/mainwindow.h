@@ -34,6 +34,7 @@ class QTextEdit;
 class QPushButton;
 class QVBoxLayout;
 class QGridLayout;
+class QScrollArea;
 
 #include "nodetype.h"
 
@@ -124,7 +125,7 @@ private: // members
 
     bool isNewNodePanelOpen;
 
-    QWidget* newNodeLayoutHolder;
+    QScrollArea* newNodePanel;
 
     QString* scriptText;
 
