@@ -12,4 +12,7 @@
         <file>editicon.png</file>
         <file>menu.png</file>
     </qresource>
+    <qresource prefix="/nodes">
+        <file>node-info.json</file>
+    </qresource>
 </RCC>

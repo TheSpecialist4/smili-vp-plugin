@@ -1,0 +1,31 @@
+{
+  "fileName" : "NodeTypes-ComboItems",
+  "description" : "The description of the nodes which can have multiple sub-nodes (combobox items). This file gives the number of functions each node has and the headers for those functions.",
+  "nodes" : [
+    {
+      "name" : "Python",
+      "functions" : [
+        {
+          "funcName" : "print",
+          "in" : ["value"],
+          "out" : null
+        },
+        {
+          "funcName" : "execfile",
+          "in" : ["fileName"],
+          "out" : null
+        }
+      ]
+    },
+    {
+      "name" : "MainWindow",
+      "functions": [
+        {
+          "funcName" : "loadFile",
+          "in" : ["File Name"],
+          "out" : null
+        }
+      ]
+    }
+  ]
+}

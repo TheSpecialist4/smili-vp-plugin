@@ -18,6 +18,7 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QScrollArea>
+#include <QDebug>
 
 #include "nodectrl.h"
 #include "mainctrl.h"
@@ -212,7 +213,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     QWidget* imageOpHolder = new QWidget;
     imageOpHolder->setLayout(imageOpLayout);
     imageOpHolder->setMaximumHeight(100);
-    imageOpHolder->setStyleSheet(QString(".QWidget{border: 1px solid #ccc;background: #e8edeb}"));
+    imageOpHolder->setStyleSheet(QString(".QWidget{border: 1px solid #383a3f;background: #2d2f33}"));
 
     //--------ModelOperation-------------------------------
     QVBoxLayout* modelOpLayout = new QVBoxLayout;
@@ -237,7 +238,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     QWidget* modelOpHolder = new QWidget;
     modelOpHolder->setLayout(modelOpLayout);
     modelOpHolder->setMaximumHeight(100);
-    modelOpHolder->setStyleSheet(QString(".QWidget{border: 1px solid #ccc;background: #e8edeb}"));
+    modelOpHolder->setStyleSheet(QString(".QWidget{border: 1px solid #383a3f;background: #2d2f33}"));
 
     //---------MainWindow-----------------------------------
     QVBoxLayout* mainWindowLayout = new QVBoxLayout;
@@ -264,7 +265,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     QWidget* mwWidget = new QWidget;
     mwWidget->setLayout(mainWindowLayout);
     mwWidget->setMaximumHeight(100);
-    mwWidget->setStyleSheet(QString(".QWidget{border: 1px solid #ccc;background: #e8edeb}"));
+    mwWidget->setStyleSheet(QString(".QWidget{border: 1px solid #383a3f;background: #2d2f33}"));
 
     //------Value------------------------------------
     QPushButton* btnValue = new QPushButton;
@@ -293,7 +294,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     pythonLayout->addWidget(btnPython);
     QWidget* pythonHolder = new QWidget;
     pythonHolder->setLayout(pythonLayout);
-    pythonHolder->setStyleSheet(QString(".QWidget{border: 1px solid #ccc;background: #e8edeb}"));
+    pythonHolder->setStyleSheet(QString(".QWidget{border: 1px solid #383a3f;background: #2d2f33}"));
     pythonHolder->setMaximumHeight(100);
 
     //------END------------------------------------------------------
@@ -333,7 +334,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     signalMapper->setMapping(btnValue, QString("Value"));
 
     connect(btnPython, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnPython, QString("Python Print"));
+    signalMapper->setMapping(btnPython, comboPython->currentText());
 
     connect(btnEnd, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnEnd, QString("END"));
@@ -402,14 +403,18 @@ void MainWindow::createNewNode(QString nodeName) {
     } else if (nodeName == "Value") {
         node = new ValueNode("Value", NodeType::VALUE_NODE);
         isPresent = true;
-    } else if (nodeName == "Python Print") {
+    } /*else if (nodeName == "Python Print") {
         node = new PythonPrintNode("Python Print", NodeType::PYTHON_PRINT_NODE);
         isPresent = true;
+    }*/ else if (nodeName.contains(QString("Python"))) {
+        //new python node
+        QString funcName = nodeName.split('.').at(1);
+        qDebug() << "func name in python " << funcName;
     }
 
 
     if (isPresent) {
-        nodeCtrl->setNodeBase(node);
+        nodeCtrl->setNodeModel(node);
         nodeCtrl->createPlugs();
     }
 }

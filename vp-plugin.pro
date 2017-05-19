@@ -114,4 +114,4 @@ HEADERS  += view/mainwindow.h \
     node/pythonprintnode.h
 
 RESOURCES += \
-    res/icons.qrc
+    res/resources.qrc

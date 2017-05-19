@@ -14,9 +14,8 @@ int main(int argc, char *argv[])
 {
     // create application
     QApplication app(argc, argv);
-//    app.setOrganizationName("clemens-sielaff");
-//    app.setOrganizationDomain("www.clemens-sielaff.com");
-//    app.setApplicationName("ZodiacGraph_ExampleApp");
+    app.setOrganizationName("The University of Queensland");
+    app.setApplicationName("SMILX_VP");
 
     // create the main window and enter the main execution loop
     MainWindow window;

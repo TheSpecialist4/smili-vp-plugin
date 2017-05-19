@@ -31,7 +31,7 @@ ErrorChecker Parser::parseGraph(QList<NodeCtrl *> nodeCtrls) {
     }
 
     while (!queue->isEmpty()) {
-        switch (queue->at(0)->getNodeBase()->getNodeType()) {
+        switch (queue->at(0)->getNodeModel()->getNodeType()) {
 //        case NodeType::FOR_NODE:
 //            //parse for
 //            break;

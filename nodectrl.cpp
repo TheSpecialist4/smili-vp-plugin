@@ -144,11 +144,11 @@ void NodeCtrl::outputDisconnected(PlugHandle myOutput, PlugHandle otherInput)
     Q_ASSERT(m_plugs[myOutput].count(otherInput) == 0);
 }
 
-void NodeCtrl::setNodeBase(NodeBase *node) {
+void NodeCtrl::setNodeModel(NodeBase *node) {
     this->node = node;
 }
 
-NodeBase* NodeCtrl::getNodeBase() {
+NodeBase* NodeCtrl::getNodeModel() {
     return this->node;
 }
 

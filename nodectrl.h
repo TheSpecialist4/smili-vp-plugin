@@ -144,9 +144,9 @@ public: // methods
     /// \brief Set the node type associated with this NodeCtrl
     /// \param node
     ///
-    void setNodeBase(NodeBase* node);
+    void setNodeModel(NodeBase* node);
 
-    NodeBase* getNodeBase();
+    NodeBase* getNodeModel();
 
     ///
     /// \brief Creates all the plugs associated with the node
