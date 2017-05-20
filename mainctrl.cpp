@@ -86,13 +86,10 @@ NodeCtrl* MainCtrl::createNode(QString &nodeType) {
     } else if (nodeName == "Value") {
         node = new ValueNode("Value", NodeType::VALUE_NODE);
         isPresent = true;
-    } /*else if (nodeName == "Python Print") {
-        node = new PythonPrintNode("Python Print", NodeType::PYTHON_PRINT_NODE);
-        isPresent = true;
-    }*/ else if (nodeName.contains(QString("Python"))) {
-        //new python node
+    } else if (nodeName.contains(QString("Python"))) {
         QString funcName = nodeName.split('.').at(1);
-        qDebug() << "func name in python " << funcName;
+        node = new PythonNode(nodeName, NodeType::PYTHON_NODE, funcName);
+        isPresent = true;
     }
 
 

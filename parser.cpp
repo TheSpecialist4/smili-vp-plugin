@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "node/pythonnode.h"
 
 #include <QDebug>
 
@@ -13,6 +14,120 @@ QString Parser::getScript() {
 }
 
 ErrorChecker Parser::parseGraph(QList<NodeCtrl *> nodeCtrls) {
+    QQueue<NodeCtrl*>* nodesQueue = new QQueue<NodeCtrl*>();
+    for (NodeCtrl* node : nodeCtrls) {
+        if (node->getName() == "START") {
+            nodesQueue->enqueue(node);
+            break;
+        }
+    }
+    if (nodesQueue->isEmpty() || nodesQueue->size() > 1) {
+        qDebug() << "error in finding START node. There can only be one START node\n";
+        return *error;
+    }
+    while (!nodesQueue->isEmpty()) {
+        parseNode(nodesQueue->dequeue(), nodesQueue);
+    }
+    return *error;
+}
+
+void Parser::parseNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    switch (node->getNodeModel()->getNodeType()) {
+    case NodeType::START_NODE:
+        parseStartNode(node, nodesQueue);
+        break;
+    case NodeType::END_NODE:
+        parseEndNode(node, nodesQueue);
+        break;
+    case NodeType::FOR_NODE:
+        //parse for
+        break;
+    case NodeType::IF_ELSE_NODE:
+        //parse if else
+        break;
+    case NodeType::OP_NODE:
+        //parse operator
+        break;
+    case NodeType::PYTHON_NODE:
+        parsePythonNode(node, nodesQueue);
+        break;
+    case NodeType::VALUE_NODE:
+        //parse value
+        break;
+    case NodeType::VAR_NODE:
+        //parse variable
+        break;
+    default:
+        break;
+    }
+}
+
+bool Parser::addNextNodeToQueue(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "OUT PIPE") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "IN PIPE") {
+                    //qDebug << "adding" << connectedPlug.getNode().getName() << "\n";
+                    nodesQueue->enqueue(allNodesDict.find(connectedPlug.getNode()).value());
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void Parser::parseStartNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    qDebug() << "begin parse START\n";
+    if (!addNextNodeToQueue(node, nodesQueue)) {
+        qDebug() << "pipeline disconnected here\n";
+    }
+    qDebug() << "end parse START\n";
+}
+
+void Parser::parseEndNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    qDebug() << "begin parse END\n";
+    qDebug() << "end parse END\n";
+}
+
+void Parser::parsePythonPrint(NodeCtrl* node) {
+    script->append(QString("print("));
+    NodeBase* printValueNode;
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "Print value") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "OUT PIPE") {
+                    qDebug() << "out pipe can only be connected to in pipe";
+                    return;
+                }
+                printValueNode = allNodesDict.find(connectedPlug.getNode()).value()->getNodeModel();
+                break;
+            }
+            break;
+        }
+    }
+    if (printValueNode->getNodeType() == NodeType::VALUE_NODE) {
+        script->append(QString("\""));
+        script->append(printValueNode->getName());
+        script->append(QString("\""));
+    }
+}
+
+void Parser::parsePythonNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    qDebug() << "begin parse PYTHON\n";
+    if (!addNextNodeToQueue(node, nodesQueue)) {
+        qDebug() << "pipeline disconnected here\n";
+    }
+    QString funcName = ((PythonNode*)node->getNodeModel())->getFuncName();
+    if (funcName == "print") {
+        parsePythonPrint(node);
+    }
+    qDebug() << "end parse PYTHON\n";
+}
+
+/*ErrorChecker Parser::parseGraph(QList<NodeCtrl *> nodeCtrls) {
     QList<NodeCtrl*>* queue = new QList<NodeCtrl*>();
     QList<NodeCtrl*>* processed = new QList<NodeCtrl*>();
 
@@ -126,3 +241,4 @@ void Parser::parsePython(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed)
 void Parser::parseValue(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed) {
 
 }
+*/

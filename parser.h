@@ -4,6 +4,7 @@
 #include <QList>
 #include <QHash>
 #include <QString>
+#include <QQueue>
 
 #include "errorchecker.h"
 #include "nodectrl.h"
@@ -19,11 +20,24 @@ public:
     QString getScript();
 
 private:
-    void parseStart(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed);
+//    void parseStart(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed);
 
-    void parsePython(QList<NodeCtrl*>* queue, QList<NodeCtrl*>* processed);
+//    void parsePython(QList<NodeCtrl*>* queue, QList<NodeCtrl*>* processed);
 
-    void parseValue(QList<NodeCtrl*>* queue, QList<NodeCtrl*>* processed);
+//    void parseValue(QList<NodeCtrl*>* queue, QList<NodeCtrl*>* processed);
+
+    bool addNextNodeToQueue(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
+
+    void parseNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
+
+    void parseStartNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
+
+    void parsePythonNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
+    void parsePythonPrint(NodeCtrl* node);
+
+    void parseEndNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
+
+private: //members
 
     ErrorChecker* error;
 

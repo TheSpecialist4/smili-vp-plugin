@@ -10,6 +10,8 @@ class PythonNode : public NodeBase
 public:
     PythonNode(QString name, NodeType type, QString funcName);
 
+    QString getFuncName();
+
 private: //functions
     void createPrintPlugs();
 
