@@ -97,6 +97,8 @@ public: // methods
 
     QString getScript();
 
+    NodeCtrl *createNode(QString& nodeType);
+
 public slots:
 
     ///
@@ -110,7 +112,7 @@ public slots:
 
     void generateScript();
 
-    NodeCtrl* createNode(QString& nodeType);
+    //NodeCtrl* createNode(QString& nodeType);
 
 private slots:
 

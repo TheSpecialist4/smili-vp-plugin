@@ -5,13 +5,10 @@ class QString;
 
 #include "node/nodebase.h"
 
-class StartStopNode : public NodeBase
+class StartNode : public NodeBase
 {
 public:
-    StartStopNode(QString name, bool isStart, NodeType nodeType);
-
-private:
-    bool isStart;
+    StartNode(QString name, NodeType nodeType);
 };
 
 #endif // STARTSTOPNODE_H

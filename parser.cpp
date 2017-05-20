@@ -41,11 +41,11 @@ ErrorChecker Parser::parseGraph(QList<NodeCtrl *> nodeCtrls) {
 //        case NodeType::OP_NODE:
 //            //parse op node
 //            break;
-        case NodeType::PYTHON_PRINT_NODE:
-            parsePythonPrint(queue, processed);
+        case NodeType::PYTHON_NODE:
+            parsePython(queue, processed);
             break;
-        case NodeType::START_STOP_NODE:
-            parseStartStop(queue, processed);
+        case NodeType::START_NODE:
+            parseStart(queue, processed);
             break;
 //        case NodeType::VALUE_NODE:
 //            //parse value
@@ -63,7 +63,7 @@ ErrorChecker Parser::parseGraph(QList<NodeCtrl *> nodeCtrls) {
     return *error;
 }
 
-void Parser::parseStartStop(QList<NodeCtrl *>* queue, QList<NodeCtrl *>* processed) {
+void Parser::parseStart(QList<NodeCtrl *>* queue, QList<NodeCtrl *>* processed) {
     qDebug() << "Parsing StartStop length: " << queue->length();
     auto plugs = queue->at(0)->getPlugHandles();
     for (auto plug : plugs) {
@@ -82,8 +82,8 @@ void Parser::parseStartStop(QList<NodeCtrl *>* queue, QList<NodeCtrl *>* process
     qDebug() << "End Parse StartStop length: " << queue->length();
 }
 
-void Parser::parsePythonPrint(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed) {
-    qDebug() << "Parsing Python print length: " << queue->length();
+void Parser::parsePython(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed) {
+    qDebug() << "Parsing Python length: " << queue->length();
     auto plugs = queue->at(0)->getPlugHandles();
     bool isError = true;
     for (auto plug : plugs) {
@@ -123,6 +123,6 @@ void Parser::parsePythonPrint(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *proce
     qDebug() << "End Parse Python Print length: " << queue->length();
 }
 
-//void Parser::parseValue(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed) {
+void Parser::parseValue(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed) {
 
-//}
+}

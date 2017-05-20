@@ -116,9 +116,11 @@ PlugRow::PlugRow(NodeProperties* editor, zodiac::PlugHandle plug,
 {
     m_removalButton->hide();
 
-    connect(m_nameEdit, SIGNAL(editingFinished()), this, SLOT(renamePlug()));
-    connect(m_directionToggle, SIGNAL(clicked()), this, SLOT(togglePlugDirection()));
-    connect(m_removalButton, SIGNAL(clicked()), this, SLOT(removePlug()));
+    //connect(m_nameEdit, SIGNAL(editingFinished()), this, SLOT(renamePlug()));
+    //connect(m_directionToggle, SIGNAL(clicked()), this, SLOT(togglePlugDirection()));
+    //connect(m_removalButton, SIGNAL(clicked()), this, SLOT(removePlug()));
+
+    m_nameEdit->setReadOnly(true);
 
     updateDirectionIcon();
 }

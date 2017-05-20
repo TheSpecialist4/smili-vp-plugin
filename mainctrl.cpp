@@ -10,6 +10,14 @@
 #include "parser.h"
 #include "errorchecker.h"
 
+#include "node/fornode.h"
+#include "node/operationnode.h"
+#include "node/startnode.h"
+#include "node/variablenode.h"
+#include "node/valuenode.h"
+#include "node/pythonnode.h"
+#include "node/endnode.h"
+
 QString MainCtrl::s_defaultName = "Node ";
 
 MainCtrl::MainCtrl(QObject *parent, zodiac::Scene* scene, PropertyEditor* propertyEditor)
@@ -25,15 +33,73 @@ MainCtrl::MainCtrl(QObject *parent, zodiac::Scene* scene, PropertyEditor* proper
             this, SLOT(selectionChanged(QList<zodiac::NodeHandle>)));
 }
 
-NodeCtrl* MainCtrl::createNode(QString &nodeType)
-{
+//NodeCtrl* MainCtrl::createNode(QString &nodeType)
+//{
+//    // the newly created Node is the only selected one to avoid confusion
+//    m_scene.deselectAll();
+
+//    QString nodeName = nodeType;
+//    NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
+//    m_nodes.insert(nodeCtrl->getNodeHandle(), nodeCtrl);
+//    //MainWindow::hideNewNodePanel();
+
+//    return nodeCtrl;
+//}
+
+NodeCtrl* MainCtrl::createNode(QString &nodeType) {
     // the newly created Node is the only selected one to avoid confusion
     m_scene.deselectAll();
+
+    bool isPresent = false;
 
     QString nodeName = nodeType;
     NodeCtrl* nodeCtrl = new NodeCtrl(this, m_scene.createNode(nodeName));
     m_nodes.insert(nodeCtrl->getNodeHandle(), nodeCtrl);
-    //MainWindow::hideNewNodePanel();
+
+    NodeBase* node;
+
+    if (nodeName == "Image Variable") {
+        node = new VariableNode("Image Variable", NodeType::VAR_NODE);
+        ((VariableNode*)node)->isImageNode(true);
+        isPresent = true;
+    } else if (nodeName == "Model Variable") {
+        node = new VariableNode("Model Variable", NodeType::VAR_NODE);
+        ((VariableNode*)node)->isImageNode(false);
+        isPresent = true;
+    } else if (nodeName == "START") {
+        node = new StartNode("START", NodeType::START_NODE);
+        isPresent = true;
+    } else if (nodeName == "END") {
+        node = new EndNode("END", NodeType::END_NODE);
+        isPresent = true;
+    } else if (nodeName == "For") {
+        node = new ForNode("For", NodeType::FOR_NODE);
+        isPresent = true;
+    } else if (nodeName == "Image Operation") {
+        node = new OperationNode("Image Operation", NodeType::OP_NODE);
+        ((OperationNode*)node)->isImageNode(true);
+        isPresent = true;
+    } else if (nodeName == "Model Operation") {
+        node = new OperationNode("Model Operation", NodeType::OP_NODE);
+        ((OperationNode*)node)->isImageNode(false);
+        isPresent = true;
+    } else if (nodeName == "Value") {
+        node = new ValueNode("Value", NodeType::VALUE_NODE);
+        isPresent = true;
+    } /*else if (nodeName == "Python Print") {
+        node = new PythonPrintNode("Python Print", NodeType::PYTHON_PRINT_NODE);
+        isPresent = true;
+    }*/ else if (nodeName.contains(QString("Python"))) {
+        //new python node
+        QString funcName = nodeName.split('.').at(1);
+        qDebug() << "func name in python " << funcName;
+    }
+
+
+    if (isPresent) {
+        nodeCtrl->setNodeModel(node);
+        nodeCtrl->createPlugs();
+    }
 
     return nodeCtrl;
 }

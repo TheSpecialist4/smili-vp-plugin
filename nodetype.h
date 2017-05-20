@@ -9,8 +9,9 @@ enum class NodeType
     VALUE_NODE,
     OP_NODE,
     VAR_NODE,
-    START_STOP_NODE,
-    PYTHON_PRINT_NODE
+    START_NODE,
+    END_NODE,
+    PYTHON_NODE
 };
 
 #endif // NODETYPE_H

@@ -19,11 +19,11 @@ public:
     QString getScript();
 
 private:
-    void parseStartStop(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed);
+    void parseStart(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed);
 
-    void parsePythonPrint(QList<NodeCtrl*>* queue, QList<NodeCtrl*>* processed);
+    void parsePython(QList<NodeCtrl*>* queue, QList<NodeCtrl*>* processed);
 
-    //void parseValue(QList<NodeCtrl*>* queue, QList<NodeCtrl*>* processed);
+    void parseValue(QList<NodeCtrl*>* queue, QList<NodeCtrl*>* processed);
 
     ErrorChecker* error;
 

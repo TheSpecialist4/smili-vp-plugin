@@ -36,10 +36,10 @@
 
 #include "node/fornode.h"
 #include "node/operationnode.h"
-#include "node/startstopnode.h"
+#include "node/startnode.h"
 #include "node/variablenode.h"
 #include "node/valuenode.h"
-#include "node/pythonprintnode.h"
+#include "node/pythonnode.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -369,54 +369,54 @@ void MainWindow::createNewNode(QString nodeName) {
     nodePropertyTab->show();
     newNodePanel->hide();
 
-    bool isPresent = false;
+    m_mainCtrl->createNode(nodeName);
 
-    NodeBase* node;
+//    NodeBase* node;
 
-    NodeCtrl* nodeCtrl = m_mainCtrl->createNode(nodeName);
+//    NodeCtrl* nodeCtrl = m_mainCtrl->createNode(nodeName);
 
-    if (nodeName == "Image Variable") {
-        node = new VariableNode("Image Variable", NodeType::VAR_NODE);
-        ((VariableNode*)node)->isImageNode(true);
-        isPresent = true;
-    } else if (nodeName == "Model Variable") {
-        node = new VariableNode("Model Variable", NodeType::VAR_NODE);
-        ((VariableNode*)node)->isImageNode(false);
-        isPresent = true;
-    } else if (nodeName == "START") {
-        node = new StartStopNode("START", true, NodeType::START_STOP_NODE);
-        isPresent = true;
-    } else if (nodeName == "END") {
-        node = new StartStopNode("END", false, NodeType::START_STOP_NODE);
-        isPresent = true;
-    } else if (nodeName == "For") {
-        node = new ForNode("For", NodeType::FOR_NODE);
-        isPresent = true;
-    } else if (nodeName == "Image Operation") {
-        node = new OperationNode("Image Operation", NodeType::OP_NODE);
-        ((OperationNode*)node)->isImageNode(true);
-        isPresent = true;
-    } else if (nodeName == "Model Operation") {
-        node = new OperationNode("Model Operation", NodeType::OP_NODE);
-        ((OperationNode*)node)->isImageNode(false);
-        isPresent = true;
-    } else if (nodeName == "Value") {
-        node = new ValueNode("Value", NodeType::VALUE_NODE);
-        isPresent = true;
-    } /*else if (nodeName == "Python Print") {
-        node = new PythonPrintNode("Python Print", NodeType::PYTHON_PRINT_NODE);
-        isPresent = true;
-    }*/ else if (nodeName.contains(QString("Python"))) {
-        //new python node
-        QString funcName = nodeName.split('.').at(1);
-        qDebug() << "func name in python " << funcName;
-    }
+//    if (nodeName == "Image Variable") {
+//        node = new VariableNode("Image Variable", NodeType::VAR_NODE);
+//        ((VariableNode*)node)->isImageNode(true);
+//        isPresent = true;
+//    } else if (nodeName == "Model Variable") {
+//        node = new VariableNode("Model Variable", NodeType::VAR_NODE);
+//        ((VariableNode*)node)->isImageNode(false);
+//        isPresent = true;
+//    } else if (nodeName == "START") {
+//        node = new StartStopNode("START", true, NodeType::START_STOP_NODE);
+//        isPresent = true;
+//    } else if (nodeName == "END") {
+//        node = new StartStopNode("END", false, NodeType::START_STOP_NODE);
+//        isPresent = true;
+//    } else if (nodeName == "For") {
+//        node = new ForNode("For", NodeType::FOR_NODE);
+//        isPresent = true;
+//    } else if (nodeName == "Image Operation") {
+//        node = new OperationNode("Image Operation", NodeType::OP_NODE);
+//        ((OperationNode*)node)->isImageNode(true);
+//        isPresent = true;
+//    } else if (nodeName == "Model Operation") {
+//        node = new OperationNode("Model Operation", NodeType::OP_NODE);
+//        ((OperationNode*)node)->isImageNode(false);
+//        isPresent = true;
+//    } else if (nodeName == "Value") {
+//        node = new ValueNode("Value", NodeType::VALUE_NODE);
+//        isPresent = true;
+//    } /*else if (nodeName == "Python Print") {
+//        node = new PythonPrintNode("Python Print", NodeType::PYTHON_PRINT_NODE);
+//        isPresent = true;
+//    }*/ else if (nodeName.contains(QString("Python"))) {
+//        //new python node
+//        QString funcName = nodeName.split('.').at(1);
+//        qDebug() << "func name in python " << funcName;
+//    }
 
 
-    if (isPresent) {
-        nodeCtrl->setNodeModel(node);
-        nodeCtrl->createPlugs();
-    }
+//    if (isPresent) {
+//        nodeCtrl->setNodeModel(node);
+//        nodeCtrl->createPlugs();
+//    }
 }
 
 void MainWindow::appendToScriptArea(QString& text) {
