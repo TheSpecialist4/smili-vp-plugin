@@ -8,7 +8,9 @@ class ErrorChecker
 public:
     ErrorChecker();
 
-    void isErrorPresent(bool error);
+    bool isErrorPresent();
+
+    void setError(bool error);
 
     QString getErrorMessage();
 

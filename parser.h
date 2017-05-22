@@ -1,14 +1,20 @@
 #ifndef PARSER_H
 #define PARSER_H
-
+#include <QDataStream>
 #include <QList>
 #include <QHash>
 #include <QString>
 #include <QQueue>
+#include <QFile>
+#include <QMessageBox>
 
 #include "errorchecker.h"
 #include "nodectrl.h"
 #include "zodiacgraph/nodehandle.h"
+
+#include "node/pythonnode.h"
+#include "node/imageoperationnode.h"
+#include "node/variablenode.h"
 
 class Parser : QObject
 {
@@ -18,6 +24,8 @@ public:
     Parser(QHash<zodiac::NodeHandle, NodeCtrl*>);
 
     QString getScript();
+
+    ErrorChecker* getErrorHandler();
 
 private:
 //    void parseStart(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed);
@@ -35,6 +43,15 @@ private:
     void parsePythonNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
     void parsePythonPrint(NodeCtrl* node);
 
+    void parseVariableNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
+
+    void parseImageOperationNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
+    void parseImageOpScale(NodeCtrl* node);
+    void parseImageOpVectorField(NodeCtrl* node);
+    void parseImageOpMedian();
+    void parseImageOpStreamLines();
+    void parseImageOpPseudoImage();
+
     void parseEndNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
 
 private: //members
@@ -44,6 +61,8 @@ private: //members
     QHash<zodiac::NodeHandle, NodeCtrl*> allNodesDict;
 
     QString* script;
+
+    QDataStream out;
 };
 
 #endif // PARSER_H

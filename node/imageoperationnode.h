@@ -5,15 +5,26 @@ class QString;
 
 #include "node/nodebase.h"
 
-class OperationNode : public NodeBase
+class ImageOperationNode : public NodeBase
 {
 public:
-    OperationNode(QString name, NodeType nodeType);
+    ImageOperationNode(QString name, NodeType nodeType, QString funcName);
 
-    void isImageNode(bool isImage);
+    QString getFuncName();
 
-private:
-    bool isImage;
+private: //functions
+    void createVectorFieldPlugs();
+
+    void createMedianPlugs();
+
+    void createStreamLinesPlugs();
+
+    void createPseudoImagePlugs();
+
+    void createScalePlugs();
+
+private: //members
+    QString funcName;
 };
 
 #endif // OPERATIONNODE_H

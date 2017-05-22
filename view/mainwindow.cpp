@@ -19,6 +19,8 @@
 #include <QComboBox>
 #include <QScrollArea>
 #include <QDebug>
+#include <QFileDialog>
+#include <QFile>
 
 #include "nodectrl.h"
 #include "mainctrl.h"
@@ -35,7 +37,7 @@
 #include "zodiacgraph/view.h"
 
 #include "node/fornode.h"
-#include "node/operationnode.h"
+#include "node/imageoperationnode.h"
 #include "node/startnode.h"
 #include "node/variablenode.h"
 #include "node/valuenode.h"
@@ -133,7 +135,7 @@ MainWindow::MainWindow(QWidget *parent)
     QAction* generateScriptAction = new QAction(QIcon(":/icons/gear.png"), tr("&Generate Script"), this);
     generateScriptAction->setStatusTip(tr("Generate Script"));
     mainToolBar->addAction(generateScriptAction);
-    connect(generateScriptAction, SIGNAL(triggered()), m_mainCtrl, SLOT(generateScript()));
+    connect(generateScriptAction, SIGNAL(triggered()), this, SLOT(savePythonScript()));
 
     QWidget* emptySpacer = new QWidget();
     emptySpacer->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
@@ -166,17 +168,11 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     btnStart->setMinimumHeight(buttonHeight);
     btnStart->setFont(*font);
 
-    //-------ImageVariable-----------------------------
-    QPushButton* btnImageVariable = new QPushButton;
-    btnImageVariable->setText("Image Variable");
-    btnImageVariable->setMinimumHeight(buttonHeight);
-    btnImageVariable->setFont(*font);
-
-    //---------ModelVariable-----------------------------
-    QPushButton* btnModelVariable = new QPushButton;
-    btnModelVariable->setText("Model Variable");
-    btnModelVariable->setMinimumHeight(buttonHeight);
-    btnModelVariable->setFont(*font);
+    //-------Variable-----------------------------
+    QPushButton* btnVariable = new QPushButton;
+    btnVariable->setText("Variable");
+    btnVariable->setMinimumHeight(buttonHeight);
+    btnVariable->setFont(*font);
 
     //------For----------------------------------------
     QPushButton* btnFor = new QPushButton;
@@ -197,18 +193,16 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
 
     QComboBox* comboImageOp = new QComboBox;
     comboImageOp->setMinimumHeight(30);
-    comboImageOp->addItem(QString("contour"));
-    comboImageOp->addItem(QString("vectorField"));
-    comboImageOp->addItem(QString("rescale"));
+    comboImageOp->setFont(*font);
+    QStringList imageOps;
+    imageOps << "ImageOp.vectorField" << "ImageOp.pseudoImage" << "ImageOp.streamLines"
+             << "ImageOp.median" << "ImageOp.scale";
+    comboImageOp->addItems(imageOps);
 
-    QPushButton* btnImageOperation = new QPushButton;
-    btnImageOperation->setText("Create");
-    btnImageOperation->setMinimumHeight(20);
-    //btnImageOperation->setFont(*font);
+    connect(comboImageOp, SIGNAL(currentTextChanged(QString)), this, SLOT(createNewNode(QString)));
 
     imageOpLayout->addWidget(labelImageOp);
     imageOpLayout->addWidget(comboImageOp);
-    imageOpLayout->addWidget(btnImageOperation);
 
     QWidget* imageOpHolder = new QWidget;
     imageOpHolder->setLayout(imageOpLayout);
@@ -222,18 +216,15 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
 
     QComboBox* comboModelOp = new QComboBox;
     comboModelOp->setMinimumHeight(30);
-    comboModelOp->addItem(QString("loadView"));
-    comboModelOp->addItem(QString("clean"));
-    comboModelOp->addItem(QString("smooth"));
+    comboModelOp->setFont(*font);
+    comboModelOp->addItem(QString("ModelOp.loadView"));
+    comboModelOp->addItem(QString("ModelOp.clean"));
+    comboModelOp->addItem(QString("ModelOp.smooth"));
 
-    QPushButton* btnModelOperation = new QPushButton;
-    btnModelOperation->setText("Create");
-    btnModelOperation->setMinimumHeight(20);
-    //btnModelOperation->setFont(*font);
+    connect(comboModelOp, SIGNAL(currentTextChanged(QString)), this, SLOT(createNewNode(QString)));
 
     modelOpLayout->addWidget(labelModelOp);
     modelOpLayout->addWidget(comboModelOp);
-    modelOpLayout->addWidget(btnModelOperation);
 
     QWidget* modelOpHolder = new QWidget;
     modelOpHolder->setLayout(modelOpLayout);
@@ -248,19 +239,16 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     QComboBox* comboMW = new QComboBox;
     comboMW->setMinimumHeight(30);
     comboMW->setFont(*font);
-    comboMW->addItem(QString("loadFile"));
-    comboMW->addItem(QString("activeImage"));
-    comboMW->addItem(QString("activeModel"));
-    comboMW->addItem(QString("titleTab"));
-    comboMW->addItem(QString("saveScreen"));
+    comboMW->addItem(QString("MainWindow.loadFile"));
+    comboMW->addItem(QString("MainWindow.activeImage"));
+    comboMW->addItem(QString("MainWindow.activeModel"));
+    comboMW->addItem(QString("MainWindow.titleTab"));
+    comboMW->addItem(QString("MainWindow.saveScreen"));
 
-    QPushButton* btnMainWindow = new QPushButton;
-    btnMainWindow->setText("Create");
-    btnMainWindow->setMinimumHeight(20);
+    connect(comboMW, SIGNAL(currentTextChanged(QString)), this, SLOT(createNewNode(QString)));
 
     mainWindowLayout->addWidget(labelMW);
     mainWindowLayout->addWidget(comboMW);
-    mainWindowLayout->addWidget(btnMainWindow);
 
     QWidget* mwWidget = new QWidget;
     mwWidget->setLayout(mainWindowLayout);
@@ -282,16 +270,14 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     comboPython->setMinimumHeight(30);
     comboPython->setFont(*font);
     comboPython->addItem(QString("Python.print"));
-    comboPython->addItem(QString("Python.exec"));
+    comboPython->addItem(QString("Python.execfile"));
+    comboPython->setCurrentIndex(-1);
 
-    QPushButton* btnPython = new QPushButton;
-    btnPython->setText("Create");
-    btnPython->setMinimumHeight(20);
-    //btnPython->setFont(*font);
+    connect(comboPython, SIGNAL(currentTextChanged(QString)), this, SLOT(createNewNode(QString)));
 
     pythonLayout->addWidget(labelPython);
     pythonLayout->addWidget(comboPython);
-    pythonLayout->addWidget(btnPython);
+
     QWidget* pythonHolder = new QWidget;
     pythonHolder->setLayout(pythonLayout);
     pythonHolder->setStyleSheet(QString(".QWidget{border: 1px solid #383a3f;background: #2d2f33}"));
@@ -309,32 +295,17 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     connect(btnStart, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnStart, QString("START"));
 
-    connect(btnImageVariable, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnImageVariable, QString("Image Variable"));
-
-    connect(btnModelVariable, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnModelVariable, QString("Model Variable"));
+    connect(btnVariable, SIGNAL(clicked()), signalMapper, SLOT(map()));
+    signalMapper->setMapping(btnVariable, QString("Variable"));
 
     connect(btnFor, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnFor, QString("For"));
 
-    connect(btnImageOperation, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnImageOperation, QString("Image Operation"));
-
-    connect(btnModelOperation, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnModelOperation, QString("Model Operation"));
-
     connect(btnIf, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnIf, QString("If"));
 
-    connect(btnMainWindow, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnMainWindow, QString("Main Window"));
-
     connect(btnValue, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnValue, QString("Value"));
-
-    connect(btnPython, SIGNAL(clicked()), signalMapper, SLOT(map()));
-    signalMapper->setMapping(btnPython, comboPython->currentText());
 
     connect(btnEnd, SIGNAL(clicked()), signalMapper, SLOT(map()));
     signalMapper->setMapping(btnEnd, QString("END"));
@@ -342,8 +313,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(createNewNode(QString)));
 
     newNodeVBoxPanel->addWidget(btnStart);
-    newNodeVBoxPanel->addWidget(btnImageVariable);
-    newNodeVBoxPanel->addWidget(btnModelVariable);
+    newNodeVBoxPanel->addWidget(btnVariable);
     newNodeVBoxPanel->addWidget(btnFor);
     newNodeVBoxPanel->addWidget(btnIf);
     newNodeVBoxPanel->addWidget(imageOpHolder);
@@ -370,63 +340,12 @@ void MainWindow::createNewNode(QString nodeName) {
     newNodePanel->hide();
 
     m_mainCtrl->createNode(nodeName);
-
-//    NodeBase* node;
-
-//    NodeCtrl* nodeCtrl = m_mainCtrl->createNode(nodeName);
-
-//    if (nodeName == "Image Variable") {
-//        node = new VariableNode("Image Variable", NodeType::VAR_NODE);
-//        ((VariableNode*)node)->isImageNode(true);
-//        isPresent = true;
-//    } else if (nodeName == "Model Variable") {
-//        node = new VariableNode("Model Variable", NodeType::VAR_NODE);
-//        ((VariableNode*)node)->isImageNode(false);
-//        isPresent = true;
-//    } else if (nodeName == "START") {
-//        node = new StartStopNode("START", true, NodeType::START_STOP_NODE);
-//        isPresent = true;
-//    } else if (nodeName == "END") {
-//        node = new StartStopNode("END", false, NodeType::START_STOP_NODE);
-//        isPresent = true;
-//    } else if (nodeName == "For") {
-//        node = new ForNode("For", NodeType::FOR_NODE);
-//        isPresent = true;
-//    } else if (nodeName == "Image Operation") {
-//        node = new OperationNode("Image Operation", NodeType::OP_NODE);
-//        ((OperationNode*)node)->isImageNode(true);
-//        isPresent = true;
-//    } else if (nodeName == "Model Operation") {
-//        node = new OperationNode("Model Operation", NodeType::OP_NODE);
-//        ((OperationNode*)node)->isImageNode(false);
-//        isPresent = true;
-//    } else if (nodeName == "Value") {
-//        node = new ValueNode("Value", NodeType::VALUE_NODE);
-//        isPresent = true;
-//    } /*else if (nodeName == "Python Print") {
-//        node = new PythonPrintNode("Python Print", NodeType::PYTHON_PRINT_NODE);
-//        isPresent = true;
-//    }*/ else if (nodeName.contains(QString("Python"))) {
-//        //new python node
-//        QString funcName = nodeName.split('.').at(1);
-//        qDebug() << "func name in python " << funcName;
-//    }
-
-
-//    if (isPresent) {
-//        nodeCtrl->setNodeModel(node);
-//        nodeCtrl->createPlugs();
-//    }
 }
 
 void MainWindow::appendToScriptArea(QString& text) {
     scriptText->append(text);
     scriptArea->setText(*scriptText);
 }
-
-//void MainWindow::hideNewNodePanel() {
-
-//}
 
 void MainWindow::toggleNewNodePanelVisibility()
 {
@@ -464,8 +383,33 @@ void MainWindow::displayAbout()
 
 void MainWindow::displayScript()
 {
-    //scriptArea->setText(m_mainCtrl->getScript());
     m_mainCtrl->saveScript();
+}
+
+void MainWindow::savePythonScript() {
+    QString fileName = QFileDialog::getSaveFileName(this,
+            tr("Save Python File"), "", tr("Python (*.py);;All Files(*)"));
+    if (fileName.isEmpty()) {
+        return;
+    } else {
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly)) {
+            QMessageBox::information(this, tr("Unable to open file"), file.errorString());
+            return;
+        }
+        QTextStream out(&file);
+        out << m_mainCtrl->generateScript();
+
+        QString messageLog = "";
+
+        if (m_mainCtrl->getScriptErrorHandler()->isErrorPresent()) {
+            messageLog.append(m_mainCtrl->getScriptErrorHandler()->getErrorMessage());
+            messageLog.append("---------------------------------\n");
+        }
+        messageLog.append("The python script was generated!");
+
+        scriptArea->setText(messageLog);
+    }
 }
 
 void MainWindow::readSettings()

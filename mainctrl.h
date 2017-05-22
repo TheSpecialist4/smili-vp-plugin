@@ -21,9 +21,11 @@
 
 #include <QObject>
 #include <QHash>
+#include <QDataStream>
 
 #include "zodiacgraph/nodehandle.h"
 #include "zodiacgraph/scenehandle.h"
+#include "parser.h"
 
 class NodeCtrl;
 class PropertyEditor;
@@ -95,22 +97,17 @@ public: // methods
     ///
     bool shutdown();
 
-    QString getScript();
-
     NodeCtrl *createNode(QString& nodeType);
 
-public slots:
+    ErrorChecker* getScriptErrorHandler();
 
-    ///
-    /// \brief Creates a new node in the graph selects and activates it.
-    ///
-    void createDefaultNode();
+    QString generateScript();
+
+public slots:
 
     void createScreenshotScript();
 
     void saveScript();
-
-    void generateScript();
 
     //NodeCtrl* createNode(QString& nodeType);
 
@@ -151,6 +148,8 @@ private: // members
     /// \brief Ever increasing index value for default names of the nodes in this manager.
     ///
     uint m_nodeIndex;
+
+    Parser* parser;
 
 private: // static members
 

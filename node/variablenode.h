@@ -10,10 +10,12 @@ class VariableNode : public NodeBase
 public:
     VariableNode(QString name, NodeType nodeType);
 
-    void isImageNode(bool isImage);
+    QString getValue();
+
+    void setValue(QString);
 
 private: //private members
-    bool isImage;
+    QString value;
 };
 
 #endif // VARIABLENODE_H

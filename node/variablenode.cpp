@@ -3,12 +3,15 @@
 VariableNode::VariableNode(QString name, NodeType nodeType)
  : NodeBase(name, nodeType)
 {
-    this->addInPlug(QString("InPlug 1"));
-    this->addOutPlug(QString("OutPlug 1"));
-
-    isImage = true;
+    this->addInPlug(QString("SET"));
+    this->addOutPlug(QString("GET"));
 }
 
-void VariableNode::isImageNode(bool isImage) {
-    this->isImage = isImage;
+void VariableNode::setValue(QString value) {
+    this->value = value;
 }
+
+QString VariableNode::getValue() {
+    return value;
+}
+

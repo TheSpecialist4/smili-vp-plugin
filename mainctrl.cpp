@@ -11,7 +11,7 @@
 #include "errorchecker.h"
 
 #include "node/fornode.h"
-#include "node/operationnode.h"
+#include "node/imageoperationnode.h"
 #include "node/startnode.h"
 #include "node/variablenode.h"
 #include "node/valuenode.h"
@@ -58,13 +58,8 @@ NodeCtrl* MainCtrl::createNode(QString &nodeType) {
 
     NodeBase* node;
 
-    if (nodeName == "Image Variable") {
-        node = new VariableNode("Image Variable", NodeType::VAR_NODE);
-        ((VariableNode*)node)->isImageNode(true);
-        isPresent = true;
-    } else if (nodeName == "Model Variable") {
-        node = new VariableNode("Model Variable", NodeType::VAR_NODE);
-        ((VariableNode*)node)->isImageNode(false);
+    if (nodeName == "Variable") {
+        node = new VariableNode("Variable", NodeType::VAR_NODE);
         isPresent = true;
     } else if (nodeName == "START") {
         node = new StartNode("START", NodeType::START_NODE);
@@ -75,14 +70,12 @@ NodeCtrl* MainCtrl::createNode(QString &nodeType) {
     } else if (nodeName == "For") {
         node = new ForNode("For", NodeType::FOR_NODE);
         isPresent = true;
-    } else if (nodeName == "Image Operation") {
-        node = new OperationNode("Image Operation", NodeType::OP_NODE);
-        ((OperationNode*)node)->isImageNode(true);
+    } else if (nodeName.contains("ImageOp")) {
+        QString funcName = nodeName.split('.').at(1);
+        qDebug() << "funcName " << funcName;
+        node = new ImageOperationNode(nodeName, NodeType::IMAGE_OP_NODE, funcName);
         isPresent = true;
-    } else if (nodeName == "Model Operation") {
-        node = new OperationNode("Model Operation", NodeType::OP_NODE);
-        ((OperationNode*)node)->isImageNode(false);
-        isPresent = true;
+    } else if (nodeName.contains("ModelOp")) {
     } else if (nodeName == "Value") {
         node = new ValueNode("Value", NodeType::VALUE_NODE);
         isPresent = true;
@@ -90,6 +83,8 @@ NodeCtrl* MainCtrl::createNode(QString &nodeType) {
         QString funcName = nodeName.split('.').at(1);
         node = new PythonNode(nodeName, NodeType::PYTHON_NODE, funcName);
         isPresent = true;
+    } else if (nodeName.contains("MainWindow")) {
+
     }
 
 
@@ -173,41 +168,13 @@ bool MainCtrl::shutdown()
     return true;
 }
 
-
-void MainCtrl::createDefaultNode()
-{
-    //NodeCtrl* newNode = createNode("Default Node");
-
-//    int plugCount = (qreal(qrand())/qreal(RAND_MAX))*12;
-//    for(int i = 0; i < plugCount + 4; ++i){
-//        if((qreal(qrand())/qreal(RAND_MAX))<0.5){
-//            newNode->addIncomingPlug("plug");
-//        } else {
-//            newNode->addOutgoingPlug("plug");
-//        }
-//    }
-
-    //newNode->setSelected(true);
-}
-
-QString MainCtrl::getScript()
-{
-    QString script = "Script: ";
-    for (auto key : m_nodes.keys()) {
-        script.append(m_nodes[key]->getName());
-        script.append(" ");
-    }
-    //qDebug() << script;
-    return script;
-}
-
 void MainCtrl::saveScript()
 {
     QList<zodiac::NodeHandle> allNodes = m_nodes.keys();
     QList<zodiac::NodeHandle> ready;
     QList<zodiac::NodeHandle> processed;
 
-    qDebug() << QString(getScript());
+    //qDebug() << QString(getScript());
     //qDebug() << "allNodes Size: " << allNodes.size();
 
     processNodes(allNodes, ready, processed);
@@ -280,12 +247,17 @@ bool MainCtrl::saveNode(zodiac::NodeHandle node)
     return true;
 }
 
-void MainCtrl::generateScript()
+QString MainCtrl::generateScript()
 {
-    Parser* parser = new Parser(m_nodes);
+    parser = new Parser(m_nodes);
     auto error = parser->parseGraph(m_nodes.values());
     qDebug() << "Errors:\n" << (error.getErrorMessage()) << "\n";
     qDebug() << "Script:\n" << (parser->getScript());
+    return parser->getScript();
+}
+
+ErrorChecker* MainCtrl::getScriptErrorHandler() {
+    return parser->getErrorHandler();
 }
 
 void MainCtrl::createScreenshotScript()

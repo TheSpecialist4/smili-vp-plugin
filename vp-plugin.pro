@@ -64,14 +64,14 @@ SOURCES += main.cpp\
     zodiacgraph/view.cpp \
     node/nodebase.cpp \
     node/variablenode.cpp \
-    node/operationnode.cpp \
     node/fornode.cpp \
     node/valuenode.cpp \
     errorchecker.cpp \
     parser.cpp \
     node/pythonnode.cpp \
     node/startnode.cpp \
-    node/endnode.cpp
+    node/endnode.cpp \
+    node/imageoperationode.cpp
 
 HEADERS  += view/mainwindow.h \
     view/collapsible.h \
@@ -105,7 +105,6 @@ HEADERS  += view/mainwindow.h \
     zodiacgraph/view.h \
     node/nodebase.h \
     node/variablenode.h \
-    node/operationnode.h \
     node/fornode.h \
     nodetype.h \
     node/valuenode.h \
@@ -113,7 +112,8 @@ HEADERS  += view/mainwindow.h \
     parser.h \
     node/pythonnode.h \
     node/startnode.h \
-    node/endnode.h
+    node/endnode.h \
+    node/imageoperationnode.h
 
 RESOURCES += \
     res/resources.qrc

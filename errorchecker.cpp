@@ -2,11 +2,15 @@
 
 ErrorChecker::ErrorChecker()
 {
-    errorMessage = new QString();
+    errorMessage = new QString("Errors:\n");
     isError = false;
 }
 
-void ErrorChecker::isErrorPresent(bool error) {
+bool ErrorChecker::isErrorPresent() {
+    return this->isError;
+}
+
+void ErrorChecker::setError(bool error) {
     this->isError = error;
 }
 
@@ -19,5 +23,6 @@ void ErrorChecker::setErrorMessage(QString message) {
 }
 
 void ErrorChecker::appendToErrorMessage(QString message) {
+    isError = true;
     errorMessage->append(message);
 }

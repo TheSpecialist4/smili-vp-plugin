@@ -1,5 +1,4 @@
 #include "parser.h"
-#include "node/pythonnode.h"
 
 #include <QDebug>
 
@@ -13,6 +12,10 @@ QString Parser::getScript() {
     return *script;
 }
 
+ErrorChecker *Parser::getErrorHandler() {
+    return this->error;
+}
+
 ErrorChecker Parser::parseGraph(QList<NodeCtrl *> nodeCtrls) {
     QQueue<NodeCtrl*>* nodesQueue = new QQueue<NodeCtrl*>();
     for (NodeCtrl* node : nodeCtrls) {
@@ -22,7 +25,7 @@ ErrorChecker Parser::parseGraph(QList<NodeCtrl *> nodeCtrls) {
         }
     }
     if (nodesQueue->isEmpty() || nodesQueue->size() > 1) {
-        qDebug() << "error in finding START node. There can only be one START node\n";
+        error->appendToErrorMessage(QString("error in finding START node. There can only be one START node\n"));
         return *error;
     }
     while (!nodesQueue->isEmpty()) {
@@ -45,8 +48,8 @@ void Parser::parseNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
     case NodeType::IF_ELSE_NODE:
         //parse if else
         break;
-    case NodeType::OP_NODE:
-        //parse operator
+    case NodeType::IMAGE_OP_NODE:
+        parseImageOperationNode(node, nodesQueue);
         break;
     case NodeType::PYTHON_NODE:
         parsePythonNode(node, nodesQueue);
@@ -55,7 +58,7 @@ void Parser::parseNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
         //parse value
         break;
     case NodeType::VAR_NODE:
-        //parse variable
+        parseVariableNode(node, nodesQueue);
         break;
     default:
         break;
@@ -71,6 +74,10 @@ bool Parser::addNextNodeToQueue(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) 
                     //qDebug << "adding" << connectedPlug.getNode().getName() << "\n";
                     nodesQueue->enqueue(allNodesDict.find(connectedPlug.getNode()).value());
                     return true;
+                } else {
+                    error->appendToErrorMessage(QString("error at node "));
+                    error->appendToErrorMessage(node->getName());
+                    error->appendToErrorMessage(QString(". OUT PIPE can only be connected to IN PIPE\n"));
                 }
             }
         }
@@ -81,7 +88,7 @@ bool Parser::addNextNodeToQueue(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) 
 void Parser::parseStartNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
     qDebug() << "begin parse START\n";
     if (!addNextNodeToQueue(node, nodesQueue)) {
-        qDebug() << "pipeline disconnected here\n";
+        error->appendToErrorMessage(QString("pipeline disconnected at START node\n"));
     }
     qDebug() << "end parse START\n";
 }
@@ -99,7 +106,8 @@ void Parser::parsePythonPrint(NodeCtrl* node) {
         if (plug.getName() == "Print value") {
             for (auto connectedPlug : plug.getConnectedPlugs()) {
                 if (connectedPlug.getName() == "OUT PIPE") {
-                    qDebug() << "out pipe can only be connected to in pipe";
+                    error->appendToErrorMessage(QString("Error connecting the pipeline in PYTHON.PRINT node"
+                                 "OUT PIPE can only be connected to IN PIPE\n"));
                     return;
                 }
                 printValueNode = allNodesDict.find(connectedPlug.getNode()).value()->getNodeModel();
@@ -111,14 +119,18 @@ void Parser::parsePythonPrint(NodeCtrl* node) {
     if (printValueNode->getNodeType() == NodeType::VALUE_NODE) {
         script->append(QString("\""));
         script->append(printValueNode->getName());
-        script->append(QString("\""));
+        script->append(QString("\")"));
+    } else if (printValueNode->getNodeType() == NodeType::VAR_NODE) {
+        script->append(printValueNode->getName());
+        script->append(QString(")"));
     }
+    script->append("\n");
 }
 
 void Parser::parsePythonNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
     qDebug() << "begin parse PYTHON\n";
     if (!addNextNodeToQueue(node, nodesQueue)) {
-        qDebug() << "pipeline disconnected here\n";
+        error->appendToErrorMessage(QString("pipeline disconnected at PYTHON node\n"));
     }
     QString funcName = ((PythonNode*)node->getNodeModel())->getFuncName();
     if (funcName == "print") {
@@ -127,118 +139,134 @@ void Parser::parsePythonNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
     qDebug() << "end parse PYTHON\n";
 }
 
-/*ErrorChecker Parser::parseGraph(QList<NodeCtrl *> nodeCtrls) {
-    QList<NodeCtrl*>* queue = new QList<NodeCtrl*>();
-    QList<NodeCtrl*>* processed = new QList<NodeCtrl*>();
-
-    for (NodeCtrl* node : nodeCtrls) {
-        qDebug() << "Checking " << node->getName();
-        if (node->getName() == "START") {
-            qDebug() << "Start added\n";
-            queue->append(node);
-            break;
-        }
+void Parser::parseVariableNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    qDebug() << "begin parse VARIABLE";
+    if (!addNextNodeToQueue(node, nodesQueue)) {
+        error->appendToErrorMessage(QString("pipeline disconnected at VARIABLE node\n"));
     }
-
-    if (queue->isEmpty()) {
-        error->setErrorMessage("Error: No START NODE found");
-        return *error;
-    }
-
-    while (!queue->isEmpty()) {
-        switch (queue->at(0)->getNodeModel()->getNodeType()) {
-//        case NodeType::FOR_NODE:
-//            //parse for
-//            break;
-//        case NodeType::IF_ELSE_NODE:
-//            //parse if else
-//            break;
-//        case NodeType::OP_NODE:
-//            //parse op node
-//            break;
-        case NodeType::PYTHON_NODE:
-            parsePython(queue, processed);
-            break;
-        case NodeType::START_NODE:
-            parseStart(queue, processed);
-            break;
-//        case NodeType::VALUE_NODE:
-//            //parse value
-//            break;
-//        case NodeType::VAR_NODE:
-//            //parse variable
-//            break;
-        default:
-            error->appendToErrorMessage(QString("Parsing error: Undefined node"));
-            //undefined
-            break;
-        }
-    }
-    error->appendToErrorMessage(QString("\nParsing complete"));
-    return *error;
-}
-
-void Parser::parseStart(QList<NodeCtrl *>* queue, QList<NodeCtrl *>* processed) {
-    qDebug() << "Parsing StartStop length: " << queue->length();
-    auto plugs = queue->at(0)->getPlugHandles();
+    auto plugs = node->getPlugHandles();
     for (auto plug : plugs) {
-        if (plug.getName() == "OUT PIPE") {
-            for (auto connectedPlug : plug.getConnectedPlugs()) {
-                if (connectedPlug.getName() == "IN PIPE") {
-                    queue->append(allNodesDict.find(connectedPlug.getNode()).value());
-                }
-            }
-        } else if (plug.getName() == "IN PIPE") {
-            script->append(QString("\n"));
-        }
-    }
-    processed->append(queue->at(0));
-    queue->removeFirst();
-    qDebug() << "End Parse StartStop length: " << queue->length();
-}
-
-void Parser::parsePython(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed) {
-    qDebug() << "Parsing Python length: " << queue->length();
-    auto plugs = queue->at(0)->getPlugHandles();
-    bool isError = true;
-    for (auto plug : plugs) {
-        if (plug.getName() == "OUT PIPE") {
-            for (auto connectedPlug : plug.getConnectedPlugs()) {
-                if (connectedPlug.getName() == "IN PIPE") {
-                    queue->append(allNodesDict.find(connectedPlug.getNode()).value());
-                    qDebug() << "In pipe from python added";
-                    isError = false;
-                    break;
-                } else {
-                    isError = true;
-                }
-            }
-        }
-        if (plug.getName() == "Print value") {
+        if (plug.getName() == "SET") {
             for (auto connectedPlug : plug.getConnectedPlugs()) {
                 if (connectedPlug.getName() == "My Value") {
-                    processed->append(allNodesDict.find(connectedPlug.getNode()).value());
-                    script->append(QString(
-                                       "print(" +
-                                       allNodesDict.find(connectedPlug.getNode()).value()->getName()) +
-                                        ")");
-                    isError = false;
+                    qDebug() << "set value to variable";
+                    ((VariableNode*)node->getNodeModel())->setValue(
+                                allNodesDict.find(connectedPlug.getNode()).value()->getName());
+                    script->append(node->getName());
+                    script->append(QString(" = \""));
+                    script->append(((VariableNode*)node->getNodeModel())->getValue());
+                    script->append(QString("\"\n"));
                     break;
-                } else {
-                    isError = true;
+                } else if (connectedPlug.getName() == "GET") {
+                    script->append(node->getName());
+                    script->append(QString(" = "));
+                    script->append(allNodesDict.find(connectedPlug.getNode()).value()->getName());
+                    script->append(QString("\n"));
+                    break;
+                }
+                else {
+                    ((VariableNode*)node->getNodeModel())->setValue("");
+                }
+            }
+            break;
+        }
+    }
+    qDebug() << "end parse VARIABLE";
+}
+
+void Parser::parseImageOperationNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    qDebug() << "begin parse IMAGE OPERATION";
+    bool isVariableNodeConnected = false;
+    addNextNodeToQueue(node, nodesQueue);
+    QString funcName = ((ImageOperationNode*)node->getNodeModel())->getFuncName();
+
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "Image Variable") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "Get") {
+                    isVariableNodeConnected = true;
+                    script->append(connectedPlug.getNode().getName());
+                    script->append(QString("."));
+                    break;
+                }
+            }
+            if (!isVariableNodeConnected) {
+                error->appendToErrorMessage(QString("variable node needs to be connected to an IMAGE OPERATION"));
+            }
+            break;
+        }
+    }
+    if (funcName == "scale") {
+        parseImageOpScale(node);
+    } else if (funcName == "vectorField") {
+        parseImageOpVectorField(node);
+    } else if (funcName == "median") {
+        parseImageOpMedian();
+    } else if (funcName == "pseudoImage") {
+        parseImageOpPseudoImage();
+    } else if (funcName == "streamLines") {
+        parseImageOpStreamLines();
+    }
+    qDebug() << "end parse IMAGE OPERATION";
+}
+
+void Parser::parseImageOpScale(NodeCtrl *node) {
+    script->append(QString("scale("));
+    bool isCorrectNodeConnected = false;
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "Scaling Value") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "Get" || connectedPlug.getName() == "My Value") {
+                    script->append(connectedPlug.getNode().getName());
+                    script->append(QString(")\n"));
+                    isCorrectNodeConnected = true;
+                    break;
+                }
+            }
+            if (!isCorrectNodeConnected) {
+                error->appendToErrorMessage(QString("wrong type of plug connected to scaling"
+                                                    "value in SCALE IMAGE OPERATION"));
+            }
+            break;
+        }
+    }
+}
+
+void Parser::parseImageOpMedian() {
+    script->append(QString("median()\n"));
+}
+
+void Parser::parseImageOpPseudoImage() {
+    script->append(QString("pseudoImage()\n"));
+}
+
+void Parser::parseImageOpStreamLines() {
+    script->append(QString("streamLines()\n"));
+}
+
+void Parser::parseImageOpVectorField(NodeCtrl *node) {
+    script->append(QString("vectorField("));
+
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "subSampleFactor") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "Get" || connectedPlug.getName() == "My Value") {
+                    script->append(connectedPlug.getNode().getName());
+                    break;
+                }
+            }
+        } else if (plug.getName() == "scaling") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "Get" || connectedPlug.getName() == "My Value") {
+                    script->append(QString(", "));
+                    script->append(connectedPlug.getNode().getName());
+                    break;
                 }
             }
         }
     }
-    if (isError) {
-        error->appendToErrorMessage(QString("Error in parsing Python Print node \n"));
-    }
-    processed->append(queue->at(0));
-    queue->removeFirst();
-    qDebug() << "End Parse Python Print length: " << queue->length();
+    script->append(QString(")\n"));
 }
-
-void Parser::parseValue(QList<NodeCtrl *> *queue, QList<NodeCtrl *> *processed) {
-
-}
-*/

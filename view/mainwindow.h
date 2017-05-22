@@ -82,6 +82,8 @@ private slots:
 
     void toggleNewNodePanelVisibility();
 
+    void savePythonScript();
+
 private: // methods
 
     ///
