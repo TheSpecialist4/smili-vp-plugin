@@ -12,7 +12,8 @@ enum class NodeType
     VAR_NODE,
     START_NODE,
     END_NODE,
-    PYTHON_NODE
+    PYTHON_NODE,
+    MAIN_WINDOW_NODE
 };
 
 #endif // NODETYPE_H

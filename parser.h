@@ -15,6 +15,7 @@
 #include "node/pythonnode.h"
 #include "node/imageoperationnode.h"
 #include "node/variablenode.h"
+#include "node/mainwindownode.h"
 
 class Parser : QObject
 {
@@ -51,6 +52,10 @@ private:
     void parseImageOpMedian();
     void parseImageOpStreamLines();
     void parseImageOpPseudoImage();
+
+    void parseMainWindowNode(NodeCtrl* node,QQueue<NodeCtrl*>* nodesQueue);
+    void parseMWLoadFile(NodeCtrl* node);
+    void parseMWSaveScreen(NodeCtrl* node);
 
     void parseEndNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
 

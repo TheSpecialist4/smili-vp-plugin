@@ -71,7 +71,8 @@ SOURCES += main.cpp\
     node/pythonnode.cpp \
     node/startnode.cpp \
     node/endnode.cpp \
-    node/imageoperationode.cpp
+    node/imageoperationode.cpp \
+    node/mainwindownode.cpp
 
 HEADERS  += view/mainwindow.h \
     view/collapsible.h \
@@ -113,7 +114,8 @@ HEADERS  += view/mainwindow.h \
     node/pythonnode.h \
     node/startnode.h \
     node/endnode.h \
-    node/imageoperationnode.h
+    node/imageoperationnode.h \
+    node/mainwindownode.h
 
 RESOURCES += \
     res/resources.qrc

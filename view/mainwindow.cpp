@@ -246,7 +246,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     comboMW->addItem(QString("MainWindow.loadFile"));
     comboMW->addItem(QString("MainWindow.activeImage"));
     comboMW->addItem(QString("MainWindow.activeModel"));
-    comboMW->addItem(QString("MainWindow.titleTab"));
+    comboMW->addItem(QString("MainWindow.tileTab"));
     comboMW->addItem(QString("MainWindow.saveScreen"));
 
     connect(comboMW, SIGNAL(activated(QString)), this, SLOT(createNewNode(QString)));

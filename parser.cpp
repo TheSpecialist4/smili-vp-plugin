@@ -43,6 +43,7 @@ void Parser::parseNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
         break;
     case NodeType::END_NODE:
         parseEndNode(node, nodesQueue);
+        nodesQueue->clear();
         break;
     case NodeType::FOR_NODE:
         parseForNode(node, nodesQueue);
@@ -62,6 +63,8 @@ void Parser::parseNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
     case NodeType::VAR_NODE:
         parseVariableNode(node, nodesQueue);
         break;
+    case NodeType::MAIN_WINDOW_NODE:
+        parseMainWindowNode(node, nodesQueue);
     default:
         break;
     }
@@ -153,7 +156,7 @@ void Parser::parseVariableNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
     for (auto plug : plugs) {
         if (plug.getName() == "SET") {
             for (auto connectedPlug : plug.getConnectedPlugs()) {
-                if (connectedPlug.getName() == "My Value") {
+                if (connectedPlug.getName() == "My Value") { // connected to Constant (ValueNode)
                     qDebug() << "set value to variable";
                     ((VariableNode*)node->getNodeModel())->setValue(
                                 allNodesDict.find(connectedPlug.getNode()).value()->getName());
@@ -162,12 +165,16 @@ void Parser::parseVariableNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
                     script->append(((VariableNode*)node->getNodeModel())->getValue());
                     script->append(QString("\"\n"));
                     break;
-                } else if (connectedPlug.getName() == "GET") {
+                } else if (connectedPlug.getName() == "GET") { // connected to a variable
                     script->append(node->getName());
                     script->append(QString(" = "));
                     script->append(allNodesDict.find(connectedPlug.getNode()).value()->getName());
                     script->append(QString("\n"));
                     break;
+                } else if (connectedPlug.getName() == "Result") { //connected to Function with return value
+                    script->append(node->getName());
+                    script->append(" = ");
+                    parseMainWindowNode(allNodesDict.find(connectedPlug.getNode()).value(), nodesQueue);
                 }
                 else {
                     ((VariableNode*)node->getNodeModel())->setValue("");
@@ -364,4 +371,81 @@ void Parser::parseForNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
         return;
     }
     qDebug() << "end parse FOR";
+}
+
+void Parser::parseMainWindowNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    qDebug() << "begin parse MAINWINDOW\n";
+    bool hasResult = false;
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "Result") {
+            hasResult = true;
+            if (plug.getConnectedPlugs().size() == 0) { // if return value is being used,
+                                                        //dont connect this node to pipeline
+                if (!addNextNodeToQueue(node, nodesQueue)) {
+                    error->appendToErrorMessage(QString("pipeline disconnected at MAIN WINDOW node\n"));
+                }
+            }
+            break;
+        }
+    }
+    if (!hasResult) {
+        if (!addNextNodeToQueue(node, nodesQueue)) {
+            error->appendToErrorMessage(QString("pipeline disconnected at MAIN WINDOW node\n"));
+        }
+    }
+    addIndentationToLine();
+    QString funcName = ((MainWindowNode*)node->getNodeModel())->getFuncName();
+    script->append("MainWindow.");
+    if (funcName == "loadFile") {
+        parseMWLoadFile(node);
+    } else if (funcName == "saveScreen") {
+        parseMWSaveScreen(node);
+    } else {
+        script->append(funcName);
+        script->append("()");
+    }
+    script->append("\n");
+    qDebug() << "end parse MAIN WINDOW";
+}
+
+void Parser::parseMWLoadFile(NodeCtrl *node) {
+    script->append(QString("loadFile("));
+
+    bool isFileNamePresent = false;
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "fileName") {
+            isFileNamePresent = true;
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "GET" || connectedPlug.getName() == "My Value") {
+                    qDebug() << "adding fileName LOadFile";
+                    script->append(connectedPlug.getNode().getName());
+                    break;
+                }
+            }
+        }
+    }
+    if (!isFileNamePresent) {
+        error->appendToErrorMessage(QString("fileName is needed for MainWindow.LoadFile node"));
+    }
+    script->append(")");
+}
+
+void Parser::parseMWSaveScreen(NodeCtrl *node) {
+    script->append(QString("saveScreen("));
+
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "fileName") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "GET" || connectedPlug.getName() == "My Value") {
+                    qDebug() << "adding fileName SaveScreen";
+                    script->append(connectedPlug.getNode().getName());
+                    break;
+                }
+            }
+        }
+    }
+    script->append(")");
 }

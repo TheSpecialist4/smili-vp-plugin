@@ -17,6 +17,7 @@
 #include "node/valuenode.h"
 #include "node/pythonnode.h"
 #include "node/endnode.h"
+#include "node/mainwindownode.h"
 
 QString MainCtrl::s_defaultName = "Node ";
 
@@ -84,7 +85,9 @@ NodeCtrl* MainCtrl::createNode(QString &nodeType) {
         node = new PythonNode(nodeName, NodeType::PYTHON_NODE, funcName);
         isPresent = true;
     } else if (nodeName.contains("MainWindow")) {
-
+        QString funcName = nodeName.split('.').at(1);
+        node = new MainWindowNode(nodeName, NodeType::MAIN_WINDOW_NODE, funcName);
+        isPresent = true;
     }
 
 
