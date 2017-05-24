@@ -105,13 +105,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     // create the Main Controller
     m_mainCtrl = new MainCtrl(this, zodiacScene, propertyEditor);
+    //create default start and end nodes
+    m_mainCtrl->createNode(QString("START"))->getNodeHandle().setPos(-100, -100);
+    m_mainCtrl->createNode(QString("END"))->getNodeHandle().setPos(-100, 200);
 
     connect(screenshotBtn, SIGNAL(clicked(bool)), m_mainCtrl, SLOT(createScreenshotScript()));
 
     // debug output area
     scriptArea = new QTextEdit(this);
     scriptArea->setStyleSheet("QTextEdit {background: #D6D5DB; color: #000000}");
-    scriptArea->setStatusTip(tr("Python script generated"));
+    scriptArea->setStatusTip(tr("Message Log"));
+    scriptArea->setReadOnly(true);
 
     QSplitter* canvasSplitter = new QSplitter(Qt::Vertical, this);
     canvasSplitter->addWidget(zodiacView);
@@ -199,7 +203,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
              << "ImageOp.median" << "ImageOp.scale";
     comboImageOp->addItems(imageOps);
 
-    connect(comboImageOp, SIGNAL(currentTextChanged(QString)), this, SLOT(createNewNode(QString)));
+    connect(comboImageOp, SIGNAL(activated(QString)), this, SLOT(createNewNode(QString)));
 
     imageOpLayout->addWidget(labelImageOp);
     imageOpLayout->addWidget(comboImageOp);
@@ -221,7 +225,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     comboModelOp->addItem(QString("ModelOp.clean"));
     comboModelOp->addItem(QString("ModelOp.smooth"));
 
-    connect(comboModelOp, SIGNAL(currentTextChanged(QString)), this, SLOT(createNewNode(QString)));
+    connect(comboModelOp, SIGNAL(activated(QString)), this, SLOT(createNewNode(QString)));
 
     modelOpLayout->addWidget(labelModelOp);
     modelOpLayout->addWidget(comboModelOp);
@@ -245,7 +249,7 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     comboMW->addItem(QString("MainWindow.titleTab"));
     comboMW->addItem(QString("MainWindow.saveScreen"));
 
-    connect(comboMW, SIGNAL(currentTextChanged(QString)), this, SLOT(createNewNode(QString)));
+    connect(comboMW, SIGNAL(activated(QString)), this, SLOT(createNewNode(QString)));
 
     mainWindowLayout->addWidget(labelMW);
     mainWindowLayout->addWidget(comboMW);
@@ -270,10 +274,9 @@ void MainWindow::createNewNodePanel(QGridLayout* leftGrid)
     comboPython->setMinimumHeight(30);
     comboPython->setFont(*font);
     comboPython->addItem(QString("Python.print"));
-    comboPython->addItem(QString("Python.execfile"));
-    comboPython->setCurrentIndex(-1);
+    //comboPython->addItem(QString("Python.execfile"));
 
-    connect(comboPython, SIGNAL(currentTextChanged(QString)), this, SLOT(createNewNode(QString)));
+    connect(comboPython, SIGNAL(activated(QString)), this, SLOT(createNewNode(QString)));
 
     pythonLayout->addWidget(labelPython);
     pythonLayout->addWidget(comboPython);
@@ -372,11 +375,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::displayAbout()
 {
     QMessageBox aboutBox;
-    aboutBox.setWindowTitle("About the plugin");
+    aboutBox.setWindowTitle("About this application");
     aboutBox.setText(
-        "<h3>About this Application</h3>"
-        "This application allows you to generate python scripts for SMILI <a href=\"smili-project.sourceforge.net\"</a>"
-        "using visual nodes."
+        "<h3>Visual Programming Interface for SMILI</h3>"
+        "This application allows you create python scripts for SMILI <a href=\"smili-project.sourceforge.net\"</a>"
+        "using graphical nodes."
          );
     aboutBox.exec();
 }
@@ -405,8 +408,9 @@ void MainWindow::savePythonScript() {
         if (m_mainCtrl->getScriptErrorHandler()->isErrorPresent()) {
             messageLog.append(m_mainCtrl->getScriptErrorHandler()->getErrorMessage());
             messageLog.append("---------------------------------\n");
+        } else {
+            messageLog.append("The python script was generated!");
         }
-        messageLog.append("The python script was generated!");
 
         scriptArea->setText(messageLog);
     }

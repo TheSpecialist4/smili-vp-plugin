@@ -54,6 +54,11 @@ private:
 
     void parseEndNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
 
+    void parseForNode(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
+    bool addForStartNodeToQueue(NodeCtrl* node, QQueue<NodeCtrl*>* nodesQueue);
+
+    void addIndentationToLine();
+
 private: //members
 
     ErrorChecker* error;
@@ -63,6 +68,10 @@ private: //members
     QString* script;
 
     QDataStream out;
+
+    QSet<NodeCtrl*>* indentationLevel;
+
+    QString fourSpaces;
 };
 
 #endif // PARSER_H

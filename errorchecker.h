@@ -21,6 +21,7 @@ public:
 private:
     bool isError;
     QString* errorMessage;
+    int errorCounter;
 };
 
 #endif // ERRORCHECKER_H

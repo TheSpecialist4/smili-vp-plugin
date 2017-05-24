@@ -4,6 +4,7 @@ ErrorChecker::ErrorChecker()
 {
     errorMessage = new QString("Errors:\n");
     isError = false;
+    errorCounter = 0;
 }
 
 bool ErrorChecker::isErrorPresent() {
@@ -24,5 +25,7 @@ void ErrorChecker::setErrorMessage(QString message) {
 
 void ErrorChecker::appendToErrorMessage(QString message) {
     isError = true;
+    *errorMessage += QString::number(++errorCounter);
+    errorMessage->append(": ");
     errorMessage->append(message);
 }

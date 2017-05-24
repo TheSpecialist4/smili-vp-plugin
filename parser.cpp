@@ -6,6 +6,8 @@ Parser::Parser(QHash<zodiac::NodeHandle, NodeCtrl *> allNodesDict) {
     this->allNodesDict = allNodesDict;
     error = new ErrorChecker();
     script = new QString();
+    fourSpaces = QString("    ");
+    indentationLevel = new QSet<NodeCtrl*>();
 }
 
 QString Parser::getScript() {
@@ -43,7 +45,7 @@ void Parser::parseNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
         parseEndNode(node, nodesQueue);
         break;
     case NodeType::FOR_NODE:
-        //parse for
+        parseForNode(node, nodesQueue);
         break;
     case NodeType::IF_ELSE_NODE:
         //parse if else
@@ -70,7 +72,8 @@ bool Parser::addNextNodeToQueue(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) 
     for (auto plug : plugs) {
         if (plug.getName() == "OUT PIPE") {
             for (auto connectedPlug : plug.getConnectedPlugs()) {
-                if (connectedPlug.getName() == "IN PIPE") {
+                if (connectedPlug.getName() == "IN PIPE" || connectedPlug.getName() == "EndFor"
+                        || connectedPlug.getName() == "EndIf") {
                     //qDebug << "adding" << connectedPlug.getNode().getName() << "\n";
                     nodesQueue->enqueue(allNodesDict.find(connectedPlug.getNode()).value());
                     return true;
@@ -132,6 +135,7 @@ void Parser::parsePythonNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
     if (!addNextNodeToQueue(node, nodesQueue)) {
         error->appendToErrorMessage(QString("pipeline disconnected at PYTHON node\n"));
     }
+    addIndentationToLine();
     QString funcName = ((PythonNode*)node->getNodeModel())->getFuncName();
     if (funcName == "print") {
         parsePythonPrint(node);
@@ -144,6 +148,7 @@ void Parser::parseVariableNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
     if (!addNextNodeToQueue(node, nodesQueue)) {
         error->appendToErrorMessage(QString("pipeline disconnected at VARIABLE node\n"));
     }
+    addIndentationToLine();
     auto plugs = node->getPlugHandles();
     for (auto plug : plugs) {
         if (plug.getName() == "SET") {
@@ -180,11 +185,13 @@ void Parser::parseImageOperationNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQu
     addNextNodeToQueue(node, nodesQueue);
     QString funcName = ((ImageOperationNode*)node->getNodeModel())->getFuncName();
 
+    addIndentationToLine();
+
     auto plugs = node->getPlugHandles();
     for (auto plug : plugs) {
         if (plug.getName() == "Image Variable") {
             for (auto connectedPlug : plug.getConnectedPlugs()) {
-                if (connectedPlug.getName() == "Get") {
+                if (connectedPlug.getName() == "GET") {
                     isVariableNodeConnected = true;
                     script->append(connectedPlug.getNode().getName());
                     script->append(QString("."));
@@ -192,7 +199,7 @@ void Parser::parseImageOperationNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQu
                 }
             }
             if (!isVariableNodeConnected) {
-                error->appendToErrorMessage(QString("variable node needs to be connected to an IMAGE OPERATION"));
+                error->appendToErrorMessage(QString("variable node needs to be connected to an IMAGE OPERATION\n"));
             }
             break;
         }
@@ -218,7 +225,7 @@ void Parser::parseImageOpScale(NodeCtrl *node) {
     for (auto plug : plugs) {
         if (plug.getName() == "Scaling Value") {
             for (auto connectedPlug : plug.getConnectedPlugs()) {
-                if (connectedPlug.getName() == "Get" || connectedPlug.getName() == "My Value") {
+                if (connectedPlug.getName() == "GET" || connectedPlug.getName() == "My Value") {
                     script->append(connectedPlug.getNode().getName());
                     script->append(QString(")\n"));
                     isCorrectNodeConnected = true;
@@ -226,8 +233,8 @@ void Parser::parseImageOpScale(NodeCtrl *node) {
                 }
             }
             if (!isCorrectNodeConnected) {
-                error->appendToErrorMessage(QString("wrong type of plug connected to scaling"
-                                                    "value in SCALE IMAGE OPERATION"));
+                error->appendToErrorMessage(QString("wrong type of plug connected to scaling "
+                                                    "value in SCALE IMAGE OPERATION\n"));
             }
             break;
         }
@@ -253,15 +260,21 @@ void Parser::parseImageOpVectorField(NodeCtrl *node) {
     for (auto plug : plugs) {
         if (plug.getName() == "subSampleFactor") {
             for (auto connectedPlug : plug.getConnectedPlugs()) {
-                if (connectedPlug.getName() == "Get" || connectedPlug.getName() == "My Value") {
+                if (connectedPlug.getName() == "GET" || connectedPlug.getName() == "My Value") {
+                    qDebug() << "adding subSampleFactor";
                     script->append(connectedPlug.getNode().getName());
                     break;
                 }
             }
-        } else if (plug.getName() == "scaling") {
+        }
+    }
+    // done separately to ensure scaling is parsed after subSampleFactor
+    for (auto plug : plugs) {
+        if (plug.getName() == "scaling") {
             for (auto connectedPlug : plug.getConnectedPlugs()) {
-                if (connectedPlug.getName() == "Get" || connectedPlug.getName() == "My Value") {
-                    script->append(QString(", "));
+                if (connectedPlug.getName() == "GET" || connectedPlug.getName() == "My Value") {
+                    qDebug() << "adding scaling";
+                    script->append(", ");
                     script->append(connectedPlug.getNode().getName());
                     break;
                 }
@@ -269,4 +282,86 @@ void Parser::parseImageOpVectorField(NodeCtrl *node) {
         }
     }
     script->append(QString(")\n"));
+}
+
+void Parser::addIndentationToLine() {
+    qDebug() << indentationLevel->size();
+    for (int i = 0; i < indentationLevel->size(); i++) {
+        script->append(fourSpaces);
+    }
+}
+
+bool Parser::addForStartNodeToQueue(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "StartFor") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "IN PIPE" || connectedPlug.getName() == "StartFor") {
+                    qDebug() << "adding" << connectedPlug.getNode().getName() << "\StartFor";
+                    nodesQueue->enqueue(allNodesDict.find(connectedPlug.getNode()).value());
+                    return true;
+                } else {
+                    error->appendToErrorMessage(QString("error at node "));
+                    error->appendToErrorMessage(node->getName());
+                    error->appendToErrorMessage(QString(". StartFor can only be connected to IN PIPE\n"));
+                }
+            }
+        }
+    }
+    return false;
+}
+
+void Parser::parseForNode(NodeCtrl *node, QQueue<NodeCtrl *> *nodesQueue) {
+    qDebug() << "begin parse FOR";
+    addIndentationToLine();
+    if (!indentationLevel->contains(node)) { // starting for pipeline
+        if (!addForStartNodeToQueue(node, nodesQueue)) {
+            return;
+        }
+        indentationLevel->insert(node);
+    } else {
+        indentationLevel->remove(node);
+        addNextNodeToQueue(node, nodesQueue);
+        qDebug() << "second match for same FOR. End parse";
+        return;
+    }
+    bool correctNodeFound = false;
+    script->append("for ");
+    auto plugs = node->getPlugHandles();
+    for (auto plug : plugs) {
+        if (plug.getName() == "Variable") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "GET") {
+                    script->append(connectedPlug.getNode().getName());
+                    script->append(" in ");
+                    correctNodeFound = true;
+                    break;
+                }
+                break;
+            }
+        }
+    }
+    if (!correctNodeFound) {
+        error->appendToErrorMessage("no VARIABLE found as iterator in FOR node\n");
+        return;
+    }
+    correctNodeFound = false;
+    for (auto plug : plugs) { //done separately to maintain order of parsing
+        if (plug.getName() == "Collection") {
+            for (auto connectedPlug : plug.getConnectedPlugs()) {
+                if (connectedPlug.getName() == "GET") {
+                    script->append(connectedPlug.getNode().getName());
+                    script->append(":\n");
+                    correctNodeFound = true;
+                    break;
+                }
+                break;
+            }
+        }
+    }
+    if (!correctNodeFound) {
+        error->appendToErrorMessage("no VARIABLE found as a collection for FOR node\n");
+        return;
+    }
+    qDebug() << "end parse FOR";
 }

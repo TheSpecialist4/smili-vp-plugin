@@ -21,9 +21,9 @@ namespace zodiac {
 
 QColor View::s_backgroundColor = QColor("#191919");
 qreal View::s_zoomSpeed = 0.001;
-Qt::MouseButton View::s_dragMoveButton = Qt::RightButton;
+Qt::MouseButton View::s_dragMoveButton = Qt::MiddleButton;
 Qt::MouseButton View::s_selectionButton  = Qt::LeftButton;
-Qt::MouseButton View::s_removalButton = Qt::MiddleButton;
+Qt::MouseButton View::s_removalButton = Qt::RightButton;
 int View::s_activationKey = Qt::Key_Return;
 qreal View::s_minZoomFactor = 0.1;
 qreal View::s_maxZoomFactor = 2.0;
