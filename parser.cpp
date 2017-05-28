@@ -8,6 +8,23 @@ Parser::Parser(QHash<zodiac::NodeHandle, NodeCtrl *> allNodesDict) {
     script = new QString();
     fourSpaces = QString("    ");
     indentationLevel = new QSet<NodeCtrl*>();
+
+    script->append("'''=========================================================================\n"
+                   "The Software is copyright (c) Commonwealth Scientific and Industrial Research Organisation (CSIRO)"
+                   "ABN 41 687 119 230.\n"
+                   "All rights reserved.\n\n"
+                   "Licensed under the CSIRO BSD 3-Clause License"
+                   "You may not use this file except in compliance with the License.\n"
+                   "You may obtain a copy of the License in the file LICENSE.md or at"
+                   "https://stash.csiro.au/projects/SMILI/repos/smili/browse/license.txt\n\n"
+                   "Unless required by applicable law or agreed to in writing, software\n"
+                   "distributed under the License is distributed on an \"AS IS\" BASIS,\n"
+                   "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
+                   "See the License for the specific language governing permissions and\n"
+                   "limitations under the License.\n"
+                 "========================================================================='''\n\n"
+                   "'''This script was auto generated from the Visual Programming Interface for SMILI\n\n"
+                   "========================================================================='''\n\n");
 }
 
 QString Parser::getScript() {
